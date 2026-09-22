@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Pages;
 
-use Illuminate\Support\Facades\Mail;
+use App\Models\ContactMessage;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -18,6 +18,9 @@ class Contact extends Component
     public function send(): void
     {
         $this->resetValidation();
+        foreach (['name', 'email', 'subject', 'message'] as $field) {
+            $this->{$field} = trim($this->{$field});
+        }
         $data = $this->validate([
             'name' => ['required', 'string', 'max:100', 'not_regex:/[\r\n]/'],
             'email' => ['required', 'email', 'max:255'],
@@ -29,24 +32,10 @@ class Contact extends Component
             $this->addError('send', 'Too many messages. Please try again in an hour.');
             return;
         }
-        $recipient = config('site.support_email');
-        if (! filter_var($recipient, FILTER_VALIDATE_EMAIL) || in_array(config('mail.default'), ['log', 'array'], true)) {
-            $this->addError('send', 'The contact form is currently unavailable. Please use the contact details on this page.');
-            return;
-        }
+        ContactMessage::create($data);
         RateLimiter::hit($key, 3600);
-        try {
-            Mail::raw($data['message'], function ($mail) use ($data, $recipient) {
-                $mail->to($recipient)->replyTo($data['email'], $data['name'])
-                    ->subject('['.config('app.name').'] '.$data['subject']);
-            });
-        } catch (\Throwable $exception) {
-            report($exception);
-            $this->addError('send', 'Your message could not be sent. Please try again later or email us directly.');
-            return;
-        }
         $this->reset('name', 'email', 'subject', 'message');
-        session()->flash('contactStatus', 'Your message has been sent. Thank you for getting in touch.');
+        session()->flash('contactStatus', 'Your message has been received. Thank you for getting in touch.');
     }
 
     public function render()

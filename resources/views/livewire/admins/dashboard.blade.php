@@ -112,6 +112,22 @@
             </div>
         </section>
         <aside class="col-xl-4">
+            <section class="dashboard-panel p-4 mb-4" aria-labelledby="contact-messages-heading">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div><h2 id="contact-messages-heading" class="h5 mb-1">Contact messages</h2><p class="small text-muted mb-0">{{ number_format($stats['contactMessages']) }} total &middot; {{ number_format($stats['newContactMessages']) }} in 30 days</p></div>
+                    <span class="profile-icon profile-icon-blue"><i class="fa-solid fa-inbox" aria-hidden="true"></i></span>
+                </div>
+                @forelse ($contactMessages as $contactMessage)
+                    <article class="admin-content-row py-3" wire:key="contact-message-{{ $contactMessage->id }}">
+                        <div class="d-flex flex-wrap justify-content-between align-items-start" style="gap: .5rem;"><h3 class="h6 admin-content-title mb-1">{{ $contactMessage->subject }}</h3><time class="small text-muted" datetime="{{ $contactMessage->created_at->toIso8601String() }}">{{ $contactMessage->created_at->format('M j, Y') }}</time></div>
+                        <p class="small mb-2"><strong>{{ $contactMessage->name }}</strong><br><a href="mailto:{{ $contactMessage->email }}" style="overflow-wrap: anywhere;">{{ $contactMessage->email }}</a></p>
+                        <p class="small mb-0" style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ $contactMessage->message }}</p>
+                    </article>
+                @empty
+                    <p class="small text-muted mb-0">No contact messages have been submitted.</p>
+                @endforelse
+                <div class="mt-3">{{ $contactMessages->links(data: ['scrollTo' => false]) }}</div>
+            </section>
             <section class="dashboard-panel p-4 mb-4" aria-labelledby="quotes-heading">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h2 id="quotes-heading" class="h5 mb-0">Quote library</h2>

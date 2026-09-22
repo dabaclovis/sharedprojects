@@ -23,6 +23,23 @@ class ArticlesTest extends TestCase
         return $post;
     }
 
+    public function test_article_excerpt_is_generated_from_content_when_saved(): void
+    {
+        $user = User::factory()->create();
+        $component = Livewire::actingAs($user)->test(Articles::class)
+            ->call('create')->assertDontSee('article-excerpt')
+            ->set('title', 'A story')->set('content', "<p>First paragraph.</p>\n\nSecond paragraph.")
+            ->call('save')->assertHasNoErrors();
+
+        $post = $user->posts()->firstOrFail();
+        $this->assertSame('First paragraph. Second paragraph.', $post->excerpt);
+
+        $component->call('edit', $post->id)
+            ->set('content', '<p>Updated story.</p>')
+            ->call('save')->assertHasNoErrors();
+        $this->assertSame('Updated story.', $post->fresh()->excerpt);
+    }
+
     public function test_articles_require_admin_approval_to_publish(): void
     {
         foreach (['user', 'admin'] as $role) {

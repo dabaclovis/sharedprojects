@@ -3,6 +3,7 @@
 namespace App\Livewire\Admins;
 
 use App\Models\AffiliateProduct;
+use App\Models\ContactMessage;
 use App\Models\Event;
 use App\Models\Post;
 use App\Models\Quote;
@@ -198,8 +199,12 @@ class Dashboard extends Component
                 'upcomingEvents' => Event::where('status', 'scheduled')->where('starts_at', '>=', $now)->count(),
                 'quotes' => Quote::count(),
                 'newQuotes' => Quote::where('created_at', '>=', $now->subDays(30))->count(),
+                'contactMessages' => ContactMessage::count(),
+                'newContactMessages' => ContactMessage::where('created_at', '>=', $now->subDays(30))->count(),
             ],
             'recentUsers' => User::latest('id')->limit(5)->get(['id', 'name', 'email', 'role', 'status', 'created_at']),
+            'contactMessages' => ContactMessage::latest('id')
+                ->paginate(5, ['id', 'name', 'email', 'subject', 'message', 'created_at'], 'contactsPage'),
             'scheduledEvents' => Event::with('user:id,name')->where('status', 'scheduled')
                 ->orderBy('starts_at')->orderBy('id')
                 ->paginate(8, ['id', 'user_id', 'title', 'starts_at', 'ends_at', 'timezone'], 'eventsPage'),

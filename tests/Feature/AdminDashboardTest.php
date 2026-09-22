@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Admins\Dashboard;
+use App\Models\ContactMessage;
 use App\Models\Post;
 use App\Models\Quote;
 use App\Models\User;
@@ -13,6 +14,21 @@ use Tests\TestCase;
 class AdminDashboardTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_dashboard_shows_submitted_contact_messages(): void
+    {
+        ContactMessage::create([
+            'name' => 'Visitor Name', 'email' => 'visitor@example.test',
+            'subject' => 'Account question', 'message' => 'Please help me update my account information.',
+        ]);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        Livewire::actingAs($admin)->test(Dashboard::class)
+            ->assertSee('Contact messages')->assertSee('Visitor Name')
+            ->assertSee('visitor@example.test')->assertSee('Account question')
+            ->assertSee('Please help me update my account information.')
+            ->assertViewHas('stats', fn ($stats) => $stats['contactMessages'] === 1 && $stats['newContactMessages'] === 1);
+    }
 
     public function test_admin_can_edit_a_quote_in_a_modal(): void
     {

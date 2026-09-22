@@ -44,9 +44,6 @@
                     <label for="article-title">Title</label>
                     <input id="article-title" x-ref="title" class="form-control mb-2" wire:model="title" maxlength="255" required>
                     @error('title') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
-                    <label for="article-excerpt">Summary (optional)</label>
-                    <textarea id="article-excerpt" class="form-control mb-2" wire:model="excerpt" rows="2" maxlength="1000"></textarea>
-                    @error('excerpt') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
                     <label for="article-content">Article text</label>
                     <textarea id="article-content" class="form-control mb-2" wire:model="content" rows="10" required></textarea>
                     @error('content') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror

@@ -28,8 +28,6 @@ class Articles extends Component
 
     public string $title = '';
 
-    public string $excerpt = '';
-
     public string $content = '';
 
     public string $category = '';
@@ -59,7 +57,7 @@ class Articles extends Component
         $post = Auth::user()->posts()->findOrFail($id);
         $this->cancel();
         $this->postId = $post->id;
-        foreach (['title', 'excerpt', 'content', 'category', 'icon', 'status'] as $field) {
+        foreach (['title', 'content', 'category', 'icon', 'status'] as $field) {
             $this->{$field} = $post->{$field} ?? '';
         }
         $this->showEditor = true;
@@ -67,7 +65,7 @@ class Articles extends Component
 
     public function cancel(): void
     {
-        $this->reset('postId', 'showEditor', 'title', 'excerpt', 'content', 'category', 'icon', 'status');
+        $this->reset('postId', 'showEditor', 'title', 'content', 'category', 'icon', 'status');
         $this->resetValidation();
     }
 
@@ -78,13 +76,13 @@ class Articles extends Component
         $this->content = trim($this->content);
         $data = $this->validate([
             'title' => ['required', 'string', 'max:255'],
-            'excerpt' => ['nullable', 'string', 'max:1000'],
             'content' => ['required', 'string', 'max:100000'],
             'category' => ['nullable', Rule::enum(PostCategory::class)],
             'icon' => ['nullable', Rule::in(['fa-file-lines', 'fa-lightbulb', 'fa-comments', 'fa-seedling'])],
             'status' => ['required', Rule::in(['draft', 'published', 'archived'])],
         ]);
         $post->fill(collect($data)->except('status')->all());
+        $post->excerpt = Str::limit(preg_replace('/\s+/u', ' ', trim(strip_tags($this->content))), 180);
         if (! $post->exists) {
             $post->slug = Str::substr(Str::slug($this->title) ?: 'article', 0, 200).'-'.Str::uuid();
             $post->author()->associate(Auth::user());
