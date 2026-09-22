@@ -16,7 +16,7 @@
                 </div>
                 <label for="contact-subject">Subject</label><input id="contact-subject" class="form-control mb-3" wire:model="subject" maxlength="150" placeholder="How can we help?">@error('subject') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
                 <label for="contact-message">Message</label><textarea id="contact-message" class="form-control mb-3" rows="6" wire:model="message" maxlength="5000" placeholder="Tell us a little more..."></textarea>@error('message') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
-                <p class="small text-muted">We use these details to respond to your message. See our @guest <a href="{{ route('pages.policy') }}">privacy policy</a> @else privacy policy @endguest.</p>
+                <p class="small text-muted">We use these details to respond to your message. See our @guest <a wire:navigate href="{{ route('pages.policy') }}">privacy policy</a> @else privacy policy @endguest.</p>
                 <button class="btn btn-primary" wire:loading.attr="disabled" wire:target="send"><span wire:loading.remove wire:target="send">Send message</span><span wire:loading wire:target="send">Sending...</span></button>
             </form>
         </div></div></section>

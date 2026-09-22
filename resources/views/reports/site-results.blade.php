@@ -4,6 +4,23 @@
     $issues = collect($pages)->flatMap(fn ($page) => $page['issues']);
     $summary = app(\App\Services\SiteAudit\ReportSummary::class)->build($data);
 @endphp
+<style>
+    .site-report .report-accordion { border: 1px solid #d8e5eb; border-radius: 14px; background: #fff; margin: 14px 0; overflow: hidden; box-shadow: 0 3px 12px rgba(25, 51, 68, .05); }
+    .site-report .report-accordion > summary { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; list-style: none; font-weight: 700; color: #193344; }
+    .site-report .report-accordion > summary::-webkit-details-marker { display: none; }
+    .site-report .report-accordion > summary:hover, .site-report .report-accordion > summary:focus-visible { background: #eef9f8; }
+    .site-report .report-accordion > summary:focus-visible { outline: 3px solid #087e79; outline-offset: -3px; }
+    .site-report .report-accordion > summary .report-icon { display: inline-grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 10px; background: #dff3ef; color: #087e79; }
+    .site-report .report-accordion > summary .report-chevron { margin-left: auto; color: #65808c; transition: transform .2s; }
+    .site-report .report-accordion[open] > summary .report-chevron { transform: rotate(180deg); }
+    .site-report .report-accordion-body { padding: 4px 20px 20px; border-top: 1px solid #edf2f5; }
+    .site-report .report-accordion--nested { box-shadow: none; margin: 9px 0; }
+    .site-report .report-accordion--nested > summary { padding: 11px 14px; font-weight: 500; }
+    .site-report .report-accordion--nested > summary .report-icon { flex-basis: 28px; width: 28px; height: 28px; border-radius: 8px; }
+    .site-report .report-accordion--nested .report-accordion-body { padding: 12px 16px; }
+    .site-report .report-url { overflow-wrap: anywhere; min-width: 0; }
+    @media print { .site-report .report-accordion { box-shadow: none; break-inside: avoid; } .site-report .report-accordion > summary { padding: 8px 12px; } }
+</style>
 <section class="site-report">
     <h2>Report for {{ $report->url }}</h2>
     <p>Started {{ $report->created_at->format('M j, Y H:i') }} UTC &middot; Status: {{ $report->status }}</p>
@@ -14,23 +31,25 @@
     </div>
     <p>{{ $summary['pending'] }} queued URLs remain unchecked. @if ($summary['average_ms'] !== null) Average successful fetch: {{ $summary['average_ms'] }} ms.@endif This is a limited sample of the site.</p>
     @if ($summary['actions'])
-        <h3 class="h5 mt-3">Your action plan</h3>
+        <details class="report-accordion" open><summary><span class="report-icon"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span><span>Your action plan <small class="w3-text-grey">({{ count($summary['actions']) }})</small></span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body">
         <p>Start at the top. Each item shows the pages affected so you can make targeted changes.</p>
         @foreach (array_slice($summary['actions'], 0, ($isDownload ?? false) ? count($summary['actions']) : 12) as $action)
-            <details class="mb-2"><summary><strong>{{ $action['priority'] }}</strong> &middot; {{ count($action['urls']) }} {{ count($action['urls']) === 1 ? 'page' : 'pages' }} &middot; {{ $action['message'] }}</summary><ul>@foreach ($action['urls'] as $affected)<li style="overflow-wrap:anywhere">{{ $affected }}</li>@endforeach</ul></details>
+            <details class="report-accordion report-accordion--nested"><summary><span class="report-icon"><i class="fa-solid {{ $action['priority'] === 'Fix first' ? 'fa-circle-exclamation' : 'fa-lightbulb' }}" aria-hidden="true"></i></span><span class="report-url"><strong>{{ $action['priority'] }}</strong> &middot; {{ count($action['urls']) }} {{ count($action['urls']) === 1 ? 'page' : 'pages' }} &middot; {{ $action['message'] }}</span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body"><ul>@foreach ($action['urls'] as $affected)<li style="overflow-wrap:anywhere">{{ $affected }}</li>@endforeach</ul></div></details>
         @endforeach
         @if (count($summary['actions']) > 12 && !($isDownload ?? false))<p class="small">Showing the first 12 action groups. Download the report for the full list.</p>@endif
+        </div></details>
     @endif
     @if ($summary['broken'])
-        <h3 class="h5 mt-4">Failed pages and where they are linked</h3>
+        <details class="report-accordion"><summary><span class="report-icon"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i></span><span>Failed pages and where they are linked <small class="w3-text-grey">({{ count($summary['broken']) }})</small></span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body">
         @foreach ($summary['broken'] as $broken)
             <div class="alert alert-warning"><strong style="overflow-wrap:anywhere">{{ $broken['url'] }}</strong> &middot; HTTP {{ $broken['status'] ?: 'unavailable' }}
                 @if ($broken['sources'])<p class="mb-1">Review links on these pages:</p><ul>@foreach ($broken['sources'] as $source)<li style="overflow-wrap:anywhere">{{ $source }}</li>@endforeach</ul>@else<p class="mb-0">No linking page was found in this sample. This URL may be the start page or come from a sitemap.</p>@endif
             </div>
         @endforeach
+        </div></details>
     @endif
-    @if ($summary['blocked'])<details class="mb-3"><summary>URLs skipped because of robots.txt</summary><ul>@foreach ($summary['blocked'] as $blocked)<li style="overflow-wrap:anywhere">{{ $blocked }}</li>@endforeach</ul></details>@endif
-    <h3 class="h5 mt-3">What to do next</h3>
+    @if ($summary['blocked'])<details class="report-accordion"><summary><span class="report-icon"><i class="fa-solid fa-robot" aria-hidden="true"></i></span><span>URLs skipped because of robots.txt</span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body"><ul>@foreach ($summary['blocked'] as $blocked)<li style="overflow-wrap:anywhere">{{ $blocked }}</li>@endforeach</ul></div></details>@endif
+    <details class="report-accordion"><summary><span class="report-icon"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span><span>What to do next</span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body">
     @if (count($pages))
         <ol>
             <li>Start with “Fix first” findings. Restore failed pages and add missing titles where needed.</li>
@@ -39,12 +58,11 @@
             <li>Run another check after your changes. Use Search Console to check actual search indexing and performance.</li>
         </ol>
     @else <p>No page results yet. Check the crawl notes below for progress or the reason the check stopped.</p>@endif
-    <h3 class="h5">Crawl notes</h3>
-    <ul>@foreach ($data['notes'] as $note)<li>{{ $note }}</li>@endforeach</ul>
+    </div></details>
+    <details class="report-accordion"><summary><span class="report-icon"><i class="fa-solid fa-spider" aria-hidden="true"></i></span><span>Crawl notes <small class="w3-text-grey">({{ count($data['notes']) }})</small></span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body"><ul>@foreach ($data['notes'] as $note)<li>{{ $note }}</li>@endforeach</ul></div></details>
     <p class="small text-muted">This report checks fetched HTML, not rendered pages, rankings, backlinks, full accessibility, or Core Web Vitals. A finding is a prompt to review the page, not proof of a ranking problem. External links are listed but are not fetched. Structured data checks cover JSON syntax, not schema rules or rich-result eligibility.</p>
     @foreach ($pages as $page)
-        <article class="dashboard-panel p-4 my-3 page-report">
-            <h3 class="h5" style="overflow-wrap:anywhere">{{ $page['url'] }}</h3>
+        <details class="report-accordion page-report"><summary><span class="report-icon"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></span><span class="report-url">{{ $page['url'] }}<small class="d-block w3-text-grey">HTTP {{ $page['status'] ?: 'unavailable' }} &middot; {{ count($page['issues']) }} {{ count($page['issues']) === 1 ? 'finding' : 'findings' }}</small></span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body">
             <p>HTTP {{ $page['status'] ?: 'unavailable' }} &middot; {{ $page['ms'] }} ms &middot; Link depth {{ $page['depth'] }}</p>
             @if (!empty($page['redirect']))<p>Redirects to: {{ $page['redirect'] }}</p>@endif
             <dl>
@@ -68,7 +86,7 @@
             @if ($page['links'])
                 <details><summary>{{ count($page['links']) }} discovered links (up to 500 collected; first {{ ($isDownload ?? false) ? 500 : 20 }} shown)</summary><ul>@foreach (array_slice($page['links'], 0, ($isDownload ?? false) ? 500 : 20) as $link)<li style="overflow-wrap:anywhere">{{ $link }}</li>@endforeach</ul></details>
             @endif
-        </article>
+        </div></details>
     @endforeach
     <p class="small">Learn more: <a href="https://developers.google.com/search/docs/appearance/title-link">Page titles</a> &middot; <a href="https://developers.google.com/search/docs/crawling-indexing/robots-meta-tag">Indexing rules</a>.</p>
 </section>

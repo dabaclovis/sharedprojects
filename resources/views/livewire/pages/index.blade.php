@@ -4,7 +4,7 @@
             <p class="posts-eyebrow mb-3">A space for curious minds</p>
             <h1 id="home-heading" class="display-4 font-weight-bold">Good stories. Fresh perspectives.</h1>
             <p class="lead mx-auto mt-3 mb-4 posts-intro">Share your stories, connect people with useful discoveries, and bring your next event to life.</p>
-            @guest <a class="btn btn-primary px-4 py-2" href="{{ route('pages.articles') }}">Explore articles</a> @endguest
+            @guest <a wire:navigate class="btn btn-primary px-4 py-2" href="{{ route('pages.articles') }}">Explore articles</a> @endguest
             <a class="btn btn-outline-primary px-4 py-2 ml-2" href="#services">Our services</a>
         </div>
     </section>
@@ -22,7 +22,7 @@
                             <p class="small text-primary"><i class="fa-solid {{ $toolIcon }} mr-2" aria-hidden="true"></i>Free · No login required</p>
                             <h3 class="h5 font-weight-bold">{{ $toolTitle }}</h3>
                             <p class="text-muted">{{ $toolDescription }}</p>
-                            <a class="btn btn-outline-primary mt-auto" href="{{ route($toolRoute) }}">Open {{ strtolower($toolTitle) }}</a>
+                            <a wire:navigate class="btn btn-outline-primary mt-auto" href="{{ route($toolRoute) }}">Open {{ strtolower($toolTitle) }}</a>
                         </div>
                     </article>
                 </div>
@@ -33,7 +33,7 @@
                     <div class="card-body p-4 d-flex flex-column">
                         <h3 class="h5 font-weight-bold">Post management</h3>
                         <p class="text-muted">Create articles, refine your drafts, and publish stories for your community. Keep your content organized in one place.</p>
-                        <a class="btn btn-outline-primary mt-auto" href="{{ auth()->check() ? route('users.articles') : route('auth.register') }}">{{ auth()->check() ? 'Manage your posts' : 'Start publishing' }}</a>
+                        <a wire:navigate class="btn btn-outline-primary mt-auto" href="{{ auth()->check() ? route('users.articles') : route('auth.register') }}">{{ auth()->check() ? 'Manage your posts' : 'Start publishing' }}</a>
                     </div>
                 </article>
             </div>
@@ -43,7 +43,7 @@
                     <div class="card-body p-4 d-flex flex-column">
                         <h3 class="h5 font-weight-bold">Affiliate link posting</h3>
                         <p class="text-muted">Share product recommendations and affiliate links with your audience, with clear information about what you recommend.</p>
-                        <a class="mt-auto" href="{{ auth()->check() ? route('services.affiliates') : route('pages.products') }}">{{ auth()->check() ? 'Manage affiliate products' : 'Browse products' }} <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a>
+                        <a wire:navigate class="mt-auto" href="{{ auth()->check() ? route('services.affiliates') : route('pages.products') }}">{{ auth()->check() ? 'Manage affiliate products' : 'Browse products' }} <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a>
                     </div>
                 </article>
             </div>
@@ -53,7 +53,7 @@
                     <div class="card-body p-4 d-flex flex-column">
                         <h3 class="h5 font-weight-bold">Event scheduling</h3>
                         <p class="text-muted">Plan upcoming events and coordinate the dates and details that help bring your community together.</p>
-                        <a class="mt-auto" href="{{ route('services.calendar') }}">Open your calendar <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a>
+                        <a wire:navigate class="mt-auto" href="{{ route('services.calendar') }}">Open your calendar <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a>
                     </div>
                 </article>
             </div>

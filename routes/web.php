@@ -7,6 +7,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', \App\Livewire\Pages\Index::class)->name('pages.index');
 Route::get('/services/seo-audit', \App\Livewire\Services\SiteInspector::class)->name('services.seo-audit');
 Route::get('/services/web-crawler', \App\Livewire\Services\SiteInspector::class)->name('services.web-crawler');
+Route::get('/services/site-report/{report}', function (\App\Models\SiteReport $report) {
+    abort_unless(hash_equals($report->owner_hash, hash('sha256', session()->getId())), 404);
+
+    return view('reports.site-download', compact('report'));
+})->name('services.site-report');
 Route::get('/services/quote-builder', \App\Livewire\Services\QuoteBuilder::class)->name('services.quote-builder');
 Route::get('/services/text-toolkit', \App\Livewire\Services\TextToolkit::class)->name('services.text-toolkit');
 Route::get('/services/percentage-calculator', \App\Livewire\Services\PercentageCalculator::class)->name('services.percentage-calculator');

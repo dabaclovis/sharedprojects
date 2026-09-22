@@ -33,5 +33,5 @@
             </div></div>
         </section>
     </div>
-    <p class="small text-muted">Need help with your account or data? @guest <a href="{{ route('pages.contact') }}">Contact us</a> @else Contact us @endguest or read our @guest <a href="{{ route('pages.policy') }}">privacy policy</a> @else privacy policy @endguest.</p>
+    <p class="small text-muted">Need help with your account or data? @guest <a wire:navigate href="{{ route('pages.contact') }}">Contact us</a> @else Contact us @endguest or read our @guest <a wire:navigate href="{{ route('pages.policy') }}">privacy policy</a> @else privacy policy @endguest.</p>
 </div>

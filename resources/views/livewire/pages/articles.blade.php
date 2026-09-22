@@ -34,9 +34,9 @@
                         @endif
                         <div class="card-body p-4 d-flex flex-column">
                             <span class="posts-category mb-3">{{ $post['category'] }}</span>
-                            <h3 class="h5 font-weight-bold posts-title">@guest <a href="{{ route('pages.postshow', $post->slug) }}">{{ ucfirst($post->title) }}</a> @else {{ ucfirst($post->title) }} @endguest</h3>
+                            <h3 class="h5 font-weight-bold posts-title">@guest <a wire:navigate href="{{ route('pages.postshow', $post->slug) }}">{{ ucfirst($post->title) }}</a> @else {{ ucfirst($post->title) }} @endguest</h3>
                             <p class="text-muted mt-2 mb-4">{{ ucfirst($post->excerpt ?: \Illuminate\Support\Str::limit($post->content, 180)) }}</p>
-                            @guest <a class="mb-3" href="{{ route('pages.postshow', $post->slug) }}">Read article <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a> @endguest
+                            @guest <a wire:navigate class="mb-3" href="{{ route('pages.postshow', $post->slug) }}">Read article <i class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a> @endguest
                             <div class="mt-auto pt-3 posts-byline">
                                 <p class="small text-muted mb-0"><time datetime="{{ $post->published_at->toDateString() }}">{{ $post->published_at->format('M j, Y') }}</time></p>
                             </div>

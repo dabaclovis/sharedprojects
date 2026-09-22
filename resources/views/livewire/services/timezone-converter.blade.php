@@ -25,5 +25,5 @@
         </div>
         <p class="small text-muted mt-3 mb-0">Results use a 24-hour clock and include the date and UTC offset. Daylight saving time is accounted for on your selected date.</p>
     </section>
-    <a class="d-inline-block mt-4" href="{{ route('services.word-counter') }}">Try the word counter &rarr;</a>
+    <a wire:navigate class="d-inline-block mt-4" href="{{ route('services.word-counter') }}">Try the word counter &rarr;</a>
 </div>

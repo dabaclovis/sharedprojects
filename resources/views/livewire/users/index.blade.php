@@ -6,7 +6,7 @@
                     <p class="posts-eyebrow mb-2">Your workspace</p>
                     <h1 class="h2 font-weight-bold">Welcome back, {{ $user->name }}.</h1>
                     <p class="mb-0 text-muted">Keep track of your stories and see what is ready to share.</p>
-                    <div class="mt-3 d-flex flex-wrap" style="gap: .5rem;"><a class="btn btn-outline-primary btn-sm" href="{{ route('services.affiliates') }}">Affiliate products</a><a class="btn btn-outline-primary btn-sm" href="{{ route('services.calendar') }}">My calendar</a></div>
+                    <div class="mt-3 d-flex flex-wrap" style="gap: .5rem;"><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('services.affiliates') }}">Affiliate products</a><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('services.calendar') }}">My calendar</a></div>
                 </div>
             </div>
         </header>
@@ -26,7 +26,7 @@
                 <div class="dashboard-panel p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 id="your-posts-heading" class="h5 font-weight-bold mb-0">Your posts</h2>
-                        <a href="{{ route('users.articles') }}" class="btn btn-outline-primary btn-sm">Manage articles</a>
+                        <a wire:navigate href="{{ route('users.articles') }}" class="btn btn-outline-primary btn-sm">Manage articles</a>
                         <span class="small text-muted" role="status">{{ $posts->total() }} results</span>
                     </div>
                     <div class="row mb-3">
@@ -80,7 +80,7 @@
                             <button type="button" class="btn btn-outline-primary btn-sm" wire:click="clearFilters">Clear
                                 filters</button>
                             @else
-                            @guest <a href="{{ route('pages.articles') }}" class="btn btn-outline-primary btn-sm">Explore
+                            @guest <a wire:navigate href="{{ route('pages.articles') }}" class="btn btn-outline-primary btn-sm">Explore
                                 community posts</a> @endguest
                             @endif
                         </div>
@@ -96,7 +96,7 @@
                 <div class="dashboard-panel p-4">
                     <h2 class="h6 font-weight-bold">Find your next idea</h2>
                     <p class="small text-muted">Discover stories and fresh perspectives from the community.</p>
-                    @guest <a href="{{ route('pages.articles') }}">Browse posts <i class="fa-solid fa-arrow-right ml-1"
+                    @guest <a wire:navigate href="{{ route('pages.articles') }}">Browse posts <i class="fa-solid fa-arrow-right ml-1"
                             aria-hidden="true"></i></a> @endguest
                 </div>
             </aside>

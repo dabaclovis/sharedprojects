@@ -58,7 +58,7 @@
                             <span wire:loading wire:target="register">Creating account...</span>
                         </button>
                     </form>
-                    <p class="text-center text-muted small mt-4 mb-0">Already have an account? <a
+                    <p class="text-center text-muted small mt-4 mb-0">Already have an account? <a wire:navigate
                             href="{{ route('auth.login') }}">Sign in</a></p>
                 </section>
             </div>

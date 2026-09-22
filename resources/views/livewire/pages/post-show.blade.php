@@ -2,7 +2,7 @@
     <div class="container">
         <div class="row">
         <div class="col-12">
-            @guest <a class="d-inline-block mb-4" href="{{ route('pages.articles') }}"><i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i>Back to articles</a> @endguest
+            @guest <a wire:navigate class="d-inline-block mb-4" href="{{ route('pages.articles') }}"><i class="fa-solid fa-arrow-left mr-2" aria-hidden="true"></i>Back to articles</a> @endguest
             <article class="card posts-card border-0">
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex flex-wrap align-items-center justify-content-between" style="gap: .75rem;">

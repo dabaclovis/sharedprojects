@@ -7,14 +7,14 @@
             <h1 class="h2 font-weight-bold">Admin dashboard</h1>
             <p class="mb-0">Welcome, {{ ucfirst(auth()->user()->name) }}. Your community and content at a glance.</p>
         </div>
-        <a class="btn btn-light" href="{{ route('admins.users') }}"><i class="fa-solid fa-users-gear mr-2" aria-hidden="true"></i>Manage users</a>
+        <a wire:navigate class="btn btn-light" href="{{ route('admins.users') }}"><i class="fa-solid fa-users-gear mr-2" aria-hidden="true"></i>Manage users</a>
     </header>
 
     <nav class="d-flex flex-wrap mb-4" style="gap: .5rem;" aria-label="Dashboard shortcuts">
-        <a class="btn btn-outline-primary btn-sm" href="{{ route('admins.users') }}">Manage accounts</a>
-        <a class="btn btn-outline-primary btn-sm" href="{{ route('admins.articles') }}">My articles</a>
-        <a class="btn btn-outline-primary btn-sm" href="{{ route('admins.products') }}">My products</a>
-        <a class="btn btn-outline-primary btn-sm" href="{{ route('admins.calendar') }}">My calendar</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.users') }}">Manage accounts</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.articles') }}">My articles</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.products') }}">My products</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.calendar') }}">My calendar</a>
     </nav>
 
     <section class="row" aria-label="Application statistics">
@@ -43,7 +43,7 @@
             <div class="dashboard-panel p-3 p-md-4 h-100">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <h2 id="content-heading" class="h5 mb-2">Content overview</h2>
-                    <a class="small" href="{{ route('admins.pages.'.$activeSection) }}">View public {{ $activeSection }} &rarr;</a>
+                    <a wire:navigate class="small" href="{{ route('admins.pages.'.$activeSection) }}">View public {{ $activeSection }} &rarr;</a>
                 </div>
                 <div class="btn-group mb-3" role="group" aria-label="Content type">
                     @foreach (['articles' => 'Articles', 'products' => 'Products', 'quotes' => 'Quotes'] as $value => $label)
@@ -92,10 +92,10 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm mb-2" wire:click="reviewArticle({{ $record->id }})">Review / Manage</button>
                             @endif
                             @if ($activeSection === 'articles' && $isLive)
-                                <a class="small mr-3" href="{{ route('admins.pages.postshow', $record->slug) }}">Read article &rarr;</a>
+                                <a wire:navigate class="small mr-3" href="{{ route('admins.pages.postshow', $record->slug) }}">Read article &rarr;</a>
                             @endif
                             @if ($owner?->id === auth()->id())
-                                <a class="small" href="{{ route($activeSection === 'products' ? 'admins.products' : 'admins.articles') }}">Manage my {{ $activeSection }}</a>
+                                <a wire:navigate class="small" href="{{ route($activeSection === 'products' ? 'admins.products' : 'admins.articles') }}">Manage my {{ $activeSection }}</a>
                             @endif
                             @if ($activeSection === 'products' && $record->status === 'published' && ! $isLive)
                                 <span class="small text-muted">Hidden publicly: contributor account is inactive.</span>
@@ -107,7 +107,7 @@
                 </div>
                 <div class="mt-3">{{ $records->links(data: ['scrollTo' => false]) }}</div>
                 @if ($activeSection !== 'quotes')
-                    <a class="small" href="{{ route($activeSection === 'products' ? 'admins.products' : 'admins.articles') }}">Create and manage my {{ $activeSection }} &rarr;</a>
+                    <a wire:navigate class="small" href="{{ route($activeSection === 'products' ? 'admins.products' : 'admins.articles') }}">Create and manage my {{ $activeSection }} &rarr;</a>
                 @endif
             </div>
         </section>
@@ -126,7 +126,7 @@
                 @foreach ($recentUsers as $member)
                     <div class="admin-content-row py-3" wire:key="recent-user-{{ $member->id }}"><div class="d-flex justify-content-between align-items-center" style="gap: .5rem;"><strong class="admin-content-title">{{ ucfirst($member->name) }}</strong><span class="badge {{ $member->status === 'active' ? 'badge-success' : 'badge-secondary' }}">{{ ucfirst($member->status) }}</span></div><p class="small text-muted mb-1 admin-content-title">{{ $member->email }}</p><span class="small text-muted">{{ ucfirst($member->role) }} &middot; {{ $member->created_at?->format('M j, Y') }}</span></div>
                 @endforeach
-                <a class="d-inline-block small mt-3" href="{{ route('admins.users') }}">Manage all accounts &rarr;</a>
+                <a wire:navigate class="d-inline-block small mt-3" href="{{ route('admins.users') }}">Manage all accounts &rarr;</a>
             </section>
             <section class="dashboard-panel p-4 mb-4" aria-labelledby="scheduled-events-heading">
                 <h2 id="scheduled-events-heading" class="h5">All scheduled events</h2><p class="small text-muted">Schedules from all users. Times use each event's time zone.</p>
@@ -136,7 +136,7 @@
                     <p class="small text-muted py-3">No scheduled events.</p>
                 @endforelse
                 <div class="mt-3">{{ $scheduledEvents->links(data: ['scrollTo' => false]) }}</div>
-                <a class="small" href="{{ route('admins.calendar') }}">Open my calendar &rarr;</a>
+                <a wire:navigate class="small" href="{{ route('admins.calendar') }}">Open my calendar &rarr;</a>
             </section>
         </aside>
     </div>

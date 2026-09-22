@@ -1,6 +1,6 @@
 <div class="container py-5">
     <header class="dashboard-welcome p-4 mb-4 d-flex flex-wrap justify-content-between align-items-center">
-        <div><h1 class="h3">My affiliate products</h1><p class="text-muted mb-2">Recommend useful products and manage your affiliate links.</p>@guest <a href="{{ route('pages.products') }}">View the public catalog</a> @endguest</div>
+        <div><h1 class="h3">My affiliate products</h1><p class="text-muted mb-2">Recommend useful products and manage your affiliate links.</p>@guest <a wire:navigate href="{{ route('pages.products') }}">View the public catalog</a> @endguest</div>
         <button class="btn btn-primary mt-2" wire:click="create">Add product</button>
     </header>
     @if (session('productStatus')) <div class="alert alert-success" role="status">{{ session('productStatus') }}</div> @endif

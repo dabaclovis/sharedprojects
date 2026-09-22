@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-md navbar-dark app-navbar sticky-top" aria-label="Main navigation"
     x-data="{ open: false }" @keydown.escape.window="open = false">
     <div class="container">
-        <a class="navbar-brand font-weight-bold" href="{{ route('pages.index') }}">
+        <a wire:navigate class="navbar-brand font-weight-bold" href="{{ route('pages.index') }}">
             <x-brand />
         </a>
 
@@ -14,7 +14,7 @@
             <ul class="navbar-nav mr-auto">
                 @foreach (['pages.index' => 'Home'] as $routeName => $label)
                 <li class="nav-item {{ request()->routeIs($routeName) ? 'active' : '' }}">
-                    <a class="nav-link" href="{{ route($routeName) }}" @if (request()->routeIs($routeName))
+                    <a wire:navigate class="nav-link" href="{{ route($routeName) }}" @if (request()->routeIs($routeName))
                         aria-current="page" @endif>{{ $label }}</a>
                 </li>
                 @endforeach
@@ -37,7 +37,7 @@
                         aria-expanded="false" aria-controls="resources-dropdown">Resources</button>
                     <div id="resources-dropdown" class="dropdown-menu" :class="{ 'show': resourcesOpen }">
                         @foreach (['services.seo-audit' => 'SEO audit', 'services.web-crawler' => 'Website crawler', 'services.quote-builder' => 'Freelance quote builder', 'services.text-toolkit' => 'Text toolkit', 'services.word-counter' => 'Word counter', 'services.timezone-converter' => 'Time zones', 'services.age-calculator' => 'Age calculator', 'services.percentage-calculator' => 'Percentage calculator', 'services.unit-converter' => 'Unit converter', 'services.date-difference' => 'Date difference'] as $resourceRoute => $resourceLabel)
-                            <a class="dropdown-item {{ request()->routeIs($resourceRoute) ? 'active' : '' }}"
+                            <a wire:navigate class="dropdown-item {{ request()->routeIs($resourceRoute) ? 'active' : '' }}"
                                 href="{{ route($resourceRoute) }}" @click="resourcesOpen = false; open = false"
                                 @if (request()->routeIs($resourceRoute)) aria-current="page" @endif>{{ $resourceLabel }}</a>
                         @endforeach
@@ -66,13 +66,13 @@
                     </button>
                     <div id="account-dropdown" class="dropdown-menu dropdown-menu-right account-dropdown"
                         :class="{ 'show': accountOpen }">
-                        <a class="dropdown-item"
+                        <a wire:navigate class="dropdown-item"
                             href="{{ route($account->role === 'admin' ? 'admins.index' : 'users.index') }}">Dashboard</a>
-                        <a class="dropdown-item" href="{{ route('users.profile') }}">Profile</a>
-                        <a class="dropdown-item" href="{{ route('users.articles') }}">My articles</a>
-                        <a class="dropdown-item" href="{{ route('services.affiliates') }}">My affiliate products</a>
-                        <a class="dropdown-item" href="{{ route('services.calendar') }}">My calendar</a>
-                        <a class="dropdown-item" href="{{ route('users.setting') }}">Settings</a>
+                        <a wire:navigate class="dropdown-item" href="{{ route('users.profile') }}">Profile</a>
+                        <a wire:navigate class="dropdown-item" href="{{ route('users.articles') }}">My articles</a>
+                        <a wire:navigate class="dropdown-item" href="{{ route('services.affiliates') }}">My affiliate products</a>
+                        <a wire:navigate class="dropdown-item" href="{{ route('services.calendar') }}">My calendar</a>
+                        <a wire:navigate class="dropdown-item" href="{{ route('users.setting') }}">Settings</a>
                         <div class="dropdown-divider"></div>
                         <form method="POST" action="{{ route('auth.logout') }}">
                             @csrf
@@ -83,11 +83,11 @@
                 </li>
                 @else
                 <li class="nav-item {{ request()->routeIs('auth.login') ? 'active' : '' }}">
-                    <a class="nav-link px-md-3" href="{{ route('auth.login') }}" @if (request()->routeIs('auth.login'))
+                    <a wire:navigate class="nav-link px-md-3" href="{{ route('auth.login') }}" @if (request()->routeIs('auth.login'))
                         aria-current="page" @endif>Login</a>
                 </li>
                 <li class="nav-item mt-2 mt-md-0 ml-md-2">
-                    <a class="btn app-navbar-register" href="{{ route('auth.register') }}"
+                    <a wire:navigate class="btn app-navbar-register" href="{{ route('auth.register') }}"
                         aria-current="{{ request()->routeIs('auth.register') ? 'page' : 'false' }}">Register</a>
                 </li>
                 @endauth

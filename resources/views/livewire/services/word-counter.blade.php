@@ -22,5 +22,5 @@
             @endif
         </div>
     </section>
-    <a class="d-inline-block mt-4" href="{{ route('services.timezone-converter') }}">Try the time zone converter &rarr;</a>
+    <a wire:navigate class="d-inline-block mt-4" href="{{ route('services.timezone-converter') }}">Try the time zone converter &rarr;</a>
 </div>
