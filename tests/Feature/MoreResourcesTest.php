@@ -2,9 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\DateDifference;
-use App\Livewire\Services\PercentageCalculator;
-use App\Livewire\Services\UnitConverter;
+use App\Livewire\Pages\DateDifference;
+use App\Livewire\Pages\PercentageCalculator;
+use App\Livewire\Pages\UnitConverter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -16,8 +16,8 @@ class MoreResourcesTest extends TestCase
     public function test_resources_are_public_and_linked(): void
     {
         foreach (['percentage-calculator', 'unit-converter', 'date-difference'] as $resource) {
-            $this->get(route('services.'.$resource))->assertOk()->assertSee('No account needed');
-            $this->get('/')->assertSee(route('services.'.$resource));
+            $this->get(route('pages.'.$resource))->assertOk()->assertSee('No account needed');
+            $this->get('/')->assertSee(route('pages.'.$resource));
         }
         $this->assertGuest();
     }

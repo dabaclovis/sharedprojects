@@ -22,22 +22,18 @@
 </head>
 
 <body @class(['d-flex', 'flex-column' , 'min-vh-100' ])>
-    {{-- auth users by role navbar --}}
-    @auth
-    @if (\Illuminate\Support\Facades\Auth::user()->role === 'admin')
-    @include('partials.admins.navba')
+    @if (request()->routeIs('admins.*'))
+        @include('partials.admins.navba')
+    @elseif (request()->routeIs('users.*'))
+        @include('partials.users.nav')
     @else
-    @include('partials.users.nav')
+        @include('partials.navbar')
     @endif
-    @endauth
-    {{-- guest navbar --}}
-    @guest
-    @include('partials.navbar')
-    @endguest
     <main class="flex-grow-1 container py-2">
         {{ $slot }}
     </main>
     @include('partials.footer')
+    <livewire:pages.rating-prompt />
     @livewireScripts
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\Users;
+use App\Livewire\Admins\Users;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -21,11 +21,11 @@ class UsersTest extends TestCase
 
     public function test_only_active_admins_can_access_users(): void
     {
-        $this->get(route('services.users'))->assertForbidden();
-        $this->actingAs(User::factory()->create())->get(route('services.users'))->assertForbidden();
+        $this->get(route('admins.users'))->assertRedirect(route('auth.login'));
+        $this->actingAs(User::factory()->create())->get(route('admins.users'))->assertForbidden();
         $this->actingAs(User::factory()->create(['role' => 'admin', 'status' => 'inactive']))
-            ->get(route('services.users'))->assertForbidden();
-        $this->actingAs($this->admin())->get(route('services.users'))->assertOk();
+            ->get(route('admins.users'))->assertForbidden();
+        $this->actingAs($this->admin())->get(route('admins.users'))->assertOk();
     }
 
     public function test_admin_can_create_a_user_with_a_hashed_password(): void

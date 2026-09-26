@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\TimezoneConverter;
-use App\Livewire\Services\WordCounter;
+use App\Livewire\Pages\TimezoneConverter;
+use App\Livewire\Pages\WordCounter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -14,7 +14,7 @@ class PublicToolsTest extends TestCase
 
     public function test_guests_can_find_and_use_both_tools(): void
     {
-        foreach (['services.word-counter', 'services.timezone-converter'] as $route) {
+        foreach (['pages.word-counter', 'pages.timezone-converter'] as $route) {
             $this->get(route($route))->assertOk()->assertSee('No account needed');
             $this->get('/')->assertSee(route($route));
         }

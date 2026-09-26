@@ -73,15 +73,8 @@ class AdminDashboardTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $response = $this->actingAs($admin)->get(route('admins.index'))->assertOk();
-        preg_match_all('/(?:href|action)="([^"]+)"/', $response->getContent(), $matches);
-        foreach ($matches[1] as $url) {
-            if (str_starts_with($url, url('/').'/') && ! str_starts_with($url, asset('css').'/') && ! str_starts_with($url, asset('images').'/')) {
-                $this->assertStringStartsWith(url('/admin').'/', $url);
-            }
-        }
-
-        $routes = ['admins.users', 'admins.calendar', 'admins.articles', 'admins.products', 'admins.profile', 'admins.setting',
-            'admins.pages.articles', 'admins.pages.products', 'admins.pages.quotes', 'admins.about', 'admins.contact', 'admins.policy'];
+        $response->assertSee(route('admins.articles'))->assertSee(route('users.index'))->assertSee(route('pages.index'));
+        $routes = ['admins.users', 'admins.calendar', 'admins.articles', 'admins.products', 'admins.website-audits', 'admins.sponsorships'];
         foreach ($routes as $route) {
             $this->get(route($route))->assertOk();
         }

@@ -5,6 +5,30 @@
     $summary = app(\App\Services\SiteAudit\ReportSummary::class)->build($data);
 @endphp
 <style>
+    .site-report { min-width: 0; }
+    .site-report .report-overview { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; margin: 24px 0; }
+    .site-report .report-overview-copy { flex: 1 1 260px; min-width: 0; }
+    .site-report .report-overview h2 { margin: 0 0 8px; color: #193344; font-size: clamp(1.2rem, 2.5vw, 1.65rem); line-height: 1.4; overflow-wrap: anywhere; }
+    .site-report .report-meta { margin: 0; color: #5b7080; font-size: .85rem; }
+    .site-report .report-status { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; padding: 7px 12px; border-radius: 999px; background: #e7eef5; color: #344d63; font-size: .8rem; font-weight: 700; }
+    .site-report .report-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .site-report .report-status-failed { background: #fde9e7; color: #9e3029; }
+    .site-report .report-status-complete { background: #dcf4e9; color: #216347; }
+    .site-report .report-status-running { background: #e6efff; color: #254f99; }
+    .site-report .report-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+    .site-report .report-metric { box-sizing: border-box; min-width: 0; width: 100%; max-width: none; padding: 22px; border: 1px solid #dce6ec; border-top: 3px solid var(--metric-accent); border-radius: 14px; background: linear-gradient(145deg, #fff 45%, var(--metric-tint)); box-shadow: 0 5px 18px rgba(25, 51, 68, .04); }
+    .site-report .report-metric-teal { --metric-accent: #0f766e; --metric-tint: #effaf7; }
+    .site-report .report-metric-amber { --metric-accent: #a1510c; --metric-tint: #fff7e8; }
+    .site-report .report-metric-blue { --metric-accent: #2855c7; --metric-tint: #f0f5ff; }
+    .site-report .report-metric-purple { --metric-accent: #7b3bb5; --metric-tint: #f8f1ff; }
+    .site-report .report-metric-value { margin: 0 0 8px; color: var(--metric-accent); font-size: 2rem; font-weight: 750; line-height: 1.2; }
+    .site-report .report-metric-label { margin: 0; color: #526576; font-size: .875rem; font-weight: 600; line-height: 1.5; overflow-wrap: normal; word-break: normal; }
+    .site-report .report-failure { padding: 18px 22px; border: 1px solid #f0d2cc; border-radius: 12px; background: #fff5f2; color: #833d31; }
+    .site-report .report-failure p { margin: 8px 0 0; overflow-wrap: anywhere; }
+    .site-report .report-summary-note { padding: 14px 18px; border-radius: 10px; background: #eaf1f6; color: #4a6273; font-size: .875rem; line-height: 1.6; }
+    @media (max-width: 850px) { .site-report .report-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 420px) { .site-report .report-metrics { grid-template-columns: 1fr; gap: 12px; } .site-report .report-metric { padding: 18px 20px; } }
+    @media print { .site-report .report-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; } .site-report .report-metric { padding: 12px; box-shadow: none; break-inside: avoid; } }
     .site-report .report-accordion { border: 1px solid #d8e5eb; border-radius: 14px; background: #fff; margin: 14px 0; overflow: hidden; box-shadow: 0 3px 12px rgba(25, 51, 68, .05); }
     .site-report .report-accordion > summary { display: flex; align-items: center; gap: 12px; padding: 16px 20px; cursor: pointer; list-style: none; font-weight: 700; color: #193344; }
     .site-report .report-accordion > summary::-webkit-details-marker { display: none; }
@@ -22,14 +46,19 @@
     @media print { .site-report .report-accordion { box-shadow: none; break-inside: avoid; } .site-report .report-accordion > summary { padding: 8px 12px; } }
 </style>
 <section class="site-report">
-    <h2>Report for {{ $report->url }}</h2>
-    <p>Started {{ $report->created_at->format('M j, Y H:i') }} UTC &middot; Status: {{ $report->status }}</p>
-    <div class="row age-results">
+    <header class="report-overview">
+        <div class="report-overview-copy"><h2>Report for {{ $report->url }}</h2><p class="report-meta">Started {{ $report->created_at->format('M j, Y H:i') }} UTC</p></div>
+        <span class="report-status report-status-{{ in_array($report->status, ['failed', 'complete', 'running', 'stopped']) ? $report->status : 'unknown' }}">{{ $report->status === 'stopped' ? 'Paused' : ucfirst($report->status) }}</span>
+    </header>
+    @if ($report->status === 'failed')
+        <div class="report-failure" role="status"><strong>The website check could not finish</strong><p>{{ count($pages) === 0 ? 'No pages were checked. The counts below do not mean the website is free of issues.' : 'These are partial results. Some pages could not be checked.' }}</p>@if (!empty($data['notes']))<p>{{ \Illuminate\Support\Arr::last($data['notes']) }}</p>@endif</div>
+    @endif
+    <div class="report-metrics" aria-label="Report summary">
         @foreach (['Pages checked' => count($pages), 'Fix first' => $issues->where('priority', 'Fix first')->count(), 'Other findings' => $issues->where('priority', '!=', 'Fix first')->count(), 'Blocked by robots.txt' => $data['skipped']] as $label => $value)
-            <div class="col-sm-6 col-lg-3 mb-3"><div class="age-result-card age-result-card--{{ ['teal', 'amber', 'blue', 'purple'][$loop->index] }} w3-card w3-round-xlarge w3-padding-large"><p class="h3 age-result-value">{{ $value }}</p><p class="mb-0">{{ $label }}</p></div></div>
+            <div class="report-metric report-metric-{{ ['teal', 'amber', 'blue', 'purple'][$loop->index] }}"><p class="report-metric-value">{{ number_format($value) }}</p><p class="report-metric-label">{{ $label }}</p></div>
         @endforeach
     </div>
-    <p>{{ $summary['pending'] }} queued URLs remain unchecked. @if ($summary['average_ms'] !== null) Average successful fetch: {{ $summary['average_ms'] }} ms.@endif This is a limited sample of the site.</p>
+    <p class="report-summary-note">{{ $summary['pending'] }} queued URLs remain unchecked. @if ($summary['average_ms'] !== null) Average successful fetch: {{ $summary['average_ms'] }} ms.@endif This is a limited sample of the site.</p>
     @if ($summary['actions'])
         <details class="report-accordion" open><summary><span class="report-icon"><i class="fa-solid fa-list-check" aria-hidden="true"></i></span><span>Your action plan <small class="w3-text-grey">({{ count($summary['actions']) }})</small></span><i class="fa-solid fa-chevron-down report-chevron" aria-hidden="true"></i></summary><div class="report-accordion-body">
         <p>Start at the top. Each item shows the pages affected so you can make targeted changes.</p>

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\Affiliates;
+use App\Livewire\Users\Products as Affiliates;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;

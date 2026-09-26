@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\QuoteBuilder;
+use App\Livewire\Pages\QuoteBuilder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -13,8 +13,8 @@ class QuoteBuilderTest extends TestCase
 
     public function test_guest_access_and_discovery(): void
     {
-        $this->get(route('services.quote-builder'))->assertOk()->assertSee('No account needed');
-        $this->get('/')->assertSee(route('services.quote-builder'));
+        $this->get(route('pages.quote-builder'))->assertOk()->assertSee('No account needed');
+        $this->get('/')->assertSee(route('pages.quote-builder'));
         $this->assertGuest();
     }
 

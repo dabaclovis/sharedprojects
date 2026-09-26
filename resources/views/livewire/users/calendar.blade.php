@@ -25,7 +25,7 @@
                     wire:click="create('{{ $day['date']->toDateString() }}')">
                     <button type="button" class="btn btn-sm font-weight-bold mb-1" wire:click.stop="create('{{ $day['date']->toDateString() }}')" aria-label="Add event on {{ $day['date']->format('F j, Y') }}">{{ $day['date']->day }}</button>
                     @foreach ($day['events'] as $event)
-                        <button type="button" class="calendar-event {{ $event->status === 'cancelled' ? 'calendar-cancelled' : '' }}" wire:click.stop="edit({{ $event->id }})" title="{{ $event->title }}">
+                        <button type="button" class="calendar-event calendar-color-{{ $event->color }} {{ $event->status === 'cancelled' ? 'calendar-cancelled' : '' }}" wire:click.stop="edit({{ $event->id }})" title="{{ $event->title }}">
                             <span class="small">{{ $event->starts_at->setTimezone($zone)->isSameDay($day['date']) ? $event->starts_at->setTimezone($zone)->format('H:i') : 'Continues' }}</span> {{ ucfirst($event->title) }}{{ $event->status === 'cancelled' ? ' (cancelled)' : '' }}
                         </button>
                     @endforeach
@@ -52,7 +52,7 @@
                                 <td class="{{ $day['date']->isToday() ? 'calendar-week-today' : '' }}" wire:key="week-slot-{{ $day['date']->toDateString() }}-{{ $hour }}">
                                     <button type="button" class="calendar-slot-add" wire:click="create('{{ $day['date']->toDateString() }}', {{ $hour }})" aria-label="Add event on {{ $day['date']->format('F j, Y') }} at {{ sprintf('%02d:00', $hour) }}"></button>
                                     @foreach ($day['events']->filter(fn ($event) => ($event->starts_at->lt($day['date']->utc()) ? 0 : (int) $event->starts_at->setTimezone($zone)->format('H')) === $hour) as $event)
-                                        <button type="button" class="calendar-event" wire:click="edit({{ $event->id }})" wire:key="week-event-{{ $day['date']->toDateString() }}-{{ $event->id }}">
+                                        <button type="button" class="calendar-event calendar-color-{{ $event->color }}" wire:click="edit({{ $event->id }})" wire:key="week-event-{{ $day['date']->toDateString() }}-{{ $event->id }}">
                                             <strong class="d-block">{{ ucfirst($event->title) }}</strong>
                                             <span class="calendar-event-time">{{ $event->starts_at->setTimezone($zone)->format('H:i') }} &ndash; {{ $event->ends_at->setTimezone($zone)->format('H:i') }}</span>
                                         </button>
@@ -69,10 +69,22 @@
     @if ($showEditor)
         <div class="article-modal-backdrop" x-data x-init="$nextTick(() => $refs.firstField.focus())" @keydown.escape.window="$wire.cancel()" wire:key="event-editor">
             <section class="article-modal calendar-modal card" role="dialog" aria-modal="true" aria-labelledby="event-editor-heading" x-trap.inert.noscroll="true">
-                <div class="card-header d-flex justify-content-between align-items-center"><h2 id="event-editor-heading" class="h5 mb-0">{{ $eventId ? 'Edit event' : 'New event' }}</h2><button class="close" type="button" wire:click="cancel" aria-label="Close">&times;</button></div>
+                <div class="card-header d-flex justify-content-between align-items-center"><h2 id="event-editor-heading" class="h5 mb-0">{{ $eventId ? 'Edit event' : 'New event' }}</h2><button class="w3-button w3-round btn btn-sm modal-close-button" type="button" wire:click="cancel" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
                 <form wire:submit="save" class="card-body" novalidate>
                     <label for="event-title">Title</label><input id="event-title" class="form-control mb-2" wire:model="title" x-ref="firstField" required maxlength="255">
                     @error('title') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+                    <fieldset class="mb-3">
+                        <legend class="h6">Event color</legend>
+                        <div class="d-flex flex-wrap" style="gap: .5rem;">
+                            @foreach (\App\Models\Event::COLORS as $value => $label)
+                                <label class="calendar-color-option calendar-color-{{ $value }} mb-0" for="event-color-{{ $value }}">
+                                    <input id="event-color-{{ $value }}" type="radio" wire:model="color" value="{{ $value }}" name="event-color">
+                                    <span class="calendar-color-swatch" aria-hidden="true"></span>{{ $label }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('color') <p class="text-danger small mt-1" role="alert">{{ $message }}</p> @enderror
+                    </fieldset>
                     <label for="event-description">Details (optional)</label><textarea id="event-description" class="form-control mb-2" rows="2" wire:model="description"></textarea>
                     @error('description') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
                     <label for="event-location">Location or meeting link (optional)</label><input id="event-location" class="form-control mb-2" wire:model="location" maxlength="255">

@@ -23,7 +23,7 @@
     @if ($showEditor)
         <div class="article-modal-backdrop" x-data x-init="$nextTick(() => $refs.firstField.focus())" @keydown.escape.window="$wire.cancel()" wire:key="product-editor">
             <section class="article-modal affiliate-modal card" role="dialog" aria-modal="true" aria-labelledby="product-editor-heading" x-trap.inert.noscroll="true">
-                <div class="card-header d-flex justify-content-between align-items-center"><h2 id="product-editor-heading" class="h5 mb-0">{{ $productId ? 'Edit product' : 'Add product' }}</h2><button type="button" class="close" wire:click="cancel" aria-label="Close">&times;</button></div>
+                <div class="card-header d-flex justify-content-between align-items-center"><h2 id="product-editor-heading" class="h5 mb-0">{{ $productId ? 'Edit product' : 'Add product' }}</h2><button type="button" class="w3-button w3-round btn btn-sm modal-close-button" wire:click="cancel" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
                 <form wire:submit="save" class="card-body" novalidate>
                     <label for="product-title">Product name</label><input id="product-title" x-ref="firstField" class="form-control mb-2" wire:model="title" required maxlength="255">
                     @error('title') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
@@ -65,7 +65,7 @@
                     </div>
                     <div class="row">
                         <div class="col-sm-6"><label for="product-price">Price (optional)</label><input id="product-price" type="number" min="0" step="0.01" class="form-control mb-2" wire:model="price">@error('price') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror</div>
-                        <div class="col-sm-6"><label for="product-currency">Currency</label><select id="product-currency" class="custom-select mb-2" wire:model="currency">@foreach (\App\Livewire\Services\Affiliates::CURRENCIES as $code)<option value="{{ $code }}">{{ $code }}</option>@endforeach</select>@error('currency') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror</div>
+                        <div class="col-sm-6"><label for="product-currency">Currency</label><select id="product-currency" class="custom-select mb-2" wire:model="currency">@foreach (\App\Livewire\Users\Products::CURRENCIES as $code)<option value="{{ $code }}">{{ $code }}</option>@endforeach</select>@error('currency') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror</div>
                     </div>
                     <label for="product-status">Status</label><select id="product-status" class="custom-select mb-2" wire:model="status"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select>
                     @error('status') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror

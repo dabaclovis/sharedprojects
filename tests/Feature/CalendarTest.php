@@ -2,9 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\Calendar;
+use App\Livewire\Users\Calendar;
 use App\Models\Event;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -17,15 +18,21 @@ class CalendarTest extends TestCase
     public function test_event_crud_converts_local_times_to_utc_and_back(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user)->get(route('services.calendar'))->assertOk()->assertSee('My calendar');
+        $this->actingAs($user)->get(route('users.calendar'))->assertOk()->assertSee('My calendar');
         $component = Livewire::actingAs($user)->test(Calendar::class)
             ->set('viewTimezone', 'America/New_York')->call('create', '2026-10-10')
+            ->assertSet('color', 'blue')->set('color', 'purple')
             ->set('title', 'Planning meeting')->set('starts_at', '2026-10-10T09:00')->set('ends_at', '2026-10-10T10:30')
             ->call('save')->assertHasNoErrors()->assertSet('showEditor', false)->assertSet('month', '2026-10');
         $event = $user->events()->firstOrFail();
+        $this->assertSame('purple', $event->color);
+        $component->assertSeeHtml('calendar-color-purple')->set('weeklyView', true)->assertSeeHtml('calendar-color-purple');
         $this->assertSame('2026-10-10 13:00:00', $event->starts_at->format('Y-m-d H:i:s'));
         $component->call('edit', $event->id)->assertSet('starts_at', '2026-10-10T09:00')
+            ->assertSet('color', 'purple')->set('color', 'teal')->set('weeklyView', false)
             ->set('title', 'Revised meeting')->set('status', 'cancelled')->call('save')->assertHasNoErrors()->assertSee('Revised meeting');
+        $this->assertSame('teal', $event->fresh()->color);
+        $component->assertSeeHtml('calendar-color-teal calendar-cancelled')->call('create')->assertSet('color', 'blue')->call('cancel');
         $this->assertSame('cancelled', $event->fresh()->status);
         $component->call('delete', $event->id)->assertDontSee('Revised meeting');
         $this->assertSoftDeleted($event);
@@ -40,6 +47,17 @@ class CalendarTest extends TestCase
         $component->set('timezone', 'America/New_York')->set('starts_at', '2026-03-08T02:30')->set('ends_at', '2026-03-08T04:00')
             ->call('save')->assertHasErrors('starts_at');
         $this->assertDatabaseCount('events', 0);
+    }
+
+    public function test_event_colors_are_limited_to_the_available_palette(): void
+    {
+        $user = User::factory()->create();
+        Livewire::actingAs($user)->test(Calendar::class)->call('create', '2026-10-10')
+            ->set('title', 'Meeting')->set('color', 'red; background: url(example.com)')
+            ->call('save')->assertHasErrors('color');
+        $this->assertDatabaseCount('events', 0);
+        $event = $user->events()->create(['title' => 'Default color', 'starts_at' => now('UTC'), 'ends_at' => now('UTC')->addHour()]);
+        $this->assertSame('blue', $event->fresh()->color);
     }
 
     public function test_multi_day_events_appear_on_each_day_and_month_navigation_works(): void
@@ -60,7 +78,7 @@ class CalendarTest extends TestCase
 
     public function test_accounts_cannot_access_other_events_and_inactive_users_are_blocked(): void
     {
-        $this->get(route('services.calendar'))->assertRedirect(route('auth.login'));
+        $this->get(route('users.calendar'))->assertRedirect(route('auth.login'));
         $owner = User::factory()->create();
         $event = $owner->events()->create(['title' => 'Secret appointment', 'starts_at' => now('UTC'), 'ends_at' => now('UTC')->addHour()]);
         $user = User::factory()->create(['role' => 'admin']);
@@ -106,7 +124,7 @@ class CalendarTest extends TestCase
 
     public function test_week_view_filters_events_and_handles_timezone_and_week_boundaries(): void
     {
-        $this->travelTo(\Carbon\Carbon::parse('2026-12-30 12:00:00', 'UTC'));
+        $this->travelTo(Carbon::parse('2026-12-30 12:00:00', 'UTC'));
         $user = User::factory()->create();
         foreach ([
             ['Across days', '2026-12-31 23:00:00', '2027-01-02 05:00:00', 'scheduled'],

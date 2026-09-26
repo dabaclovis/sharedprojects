@@ -11,9 +11,11 @@ class Event extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['title', 'description', 'location', 'timezone', 'starts_at', 'ends_at', 'status'];
+    public const COLORS = ['blue' => 'Blue', 'green' => 'Green', 'purple' => 'Purple', 'orange' => 'Orange', 'pink' => 'Pink', 'teal' => 'Teal'];
 
-    protected $attributes = ['status' => 'scheduled', 'timezone' => 'UTC'];
+    protected $fillable = ['title', 'description', 'location', 'timezone', 'starts_at', 'ends_at', 'status', 'color'];
+
+    protected $attributes = ['status' => 'scheduled', 'timezone' => 'UTC', 'color' => 'blue'];
 
     protected function casts(): array
     {

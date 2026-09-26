@@ -4,6 +4,7 @@
             <span class="w3-tag w3-teal w3-round">Website tools</span>
             <h1 class="w3-xxlarge w3-text-dark-grey mt-3 mb-2"><i class="fa-solid fa-diagram-project w3-text-teal mr-2" aria-hidden="true"></i>Website crawler</h1>
             <p class="w3-large mb-0">Explore your site, find page errors, and spot repeated titles and descriptions.</p>
+            <p class="small mb-0 mt-2">Free tool &middot; No account needed</p>
         </div>
     @else
     <p class="posts-eyebrow">Free tool &middot; No account needed</p>
@@ -11,9 +12,11 @@
     <p class="text-muted">{{ $mode === 'seo' ? 'Check a page and get a clear list of ways to improve it.' : 'Explore your site, find page errors, and spot repeated titles and descriptions.' }}</p>
     @endif
     <div class="dashboard-panel p-4 w3-card w3-white w3-round-xlarge">
+        <p class="small text-muted">Want help turning findings into an action plan? <a wire:navigate href="{{ route('pages.business') }}">Request a paid website review</a>.</p>
         <form wire:submit="start">
             <label class="w3-text-dark-grey" for="audit-url"><strong>Website address</strong></label>
-            <input id="audit-url" class="form-control w3-input w3-border w3-round-large mb-3" type="url" wire:model="url" placeholder="https://example.com/" maxlength="2048" required>
+            <input id="audit-url" class="form-control w3-input w3-border w3-round-large mb-2" type="text" inputmode="url" autocomplete="url" spellcheck="false" wire:model="url" placeholder="example.com or https://example.com/" maxlength="2048" aria-describedby="audit-url-help" required>
+            <p id="audit-url-help" class="small text-muted">Enter a domain or full webpage address. Addresses without a scheme use HTTPS.</p>
             @if ($mode === 'crawler')
                 <div class="row">
                     <div class="col-md-6"><label class="w3-text-dark-grey" for="audit-limit"><strong>Maximum pages</strong></label>
@@ -25,12 +28,12 @@
             @endif
             @foreach ($errors->all() as $error)<p class="text-danger" role="alert">{{ $error }}</p>@endforeach
             <p class="small text-muted">Use a public site you own or have permission to check. A copy of the report is saved in our database. Downloads are available in this browser session. Keep this page open while the check runs.</p>
-            <button type="submit" class="btn btn-primary w3-button w3-teal w3-round-large" wire:loading.attr="disabled" @disabled($report?->status === 'running')>Start {{ $mode === 'seo' ? 'SEO audit' : 'crawl' }}</button>
+            <button type="submit" class="btn btn-primary w3-button w3-teal w3-round-large" wire:loading.attr="disabled" @disabled($report?->status === 'running')><span wire:loading.remove wire:target="start">Start {{ $mode === 'seo' ? 'SEO audit' : 'crawl' }}</span><span wire:loading wire:target="start">Starting…</span></button>
             @if ($report?->status === 'running')<button type="button" class="btn btn-outline-secondary ml-2" wire:click="stop" wire:loading.attr="disabled">Pause and keep results</button>@endif
             @if ($report?->status === 'stopped' && (count($report->data['pages']) < $report->data['limit'] || isset($report->data['retry_entry'])))<button type="button" class="btn btn-outline-primary ml-2" wire:click="resume" wire:loading.attr="disabled">Resume crawl</button>@endif
         </form>
         <p class="small text-muted mt-3 mb-0">{{ $mode === 'seo' ? 'Checks one page plus robots.txt and up to five sitemap files.' : 'Checks up to 50 pages and five link levels on the same site address. Sitemap pages start at level zero. Linked query URLs and common file downloads are skipped.' }} Each fetched file is limited to 2 MB. JavaScript is not run. Response time is a server fetch measurement, not a full page-speed score.</p>
-        <a wire:navigate class="small d-inline-block mt-2" href="{{ route($mode === 'seo' ? 'services.web-crawler' : 'services.seo-audit') }}">{{ $mode === 'seo' ? 'Need more pages? Open the website crawler' : 'Need one page? Open the SEO audit' }}</a>
+        <a wire:navigate class="small d-inline-block mt-2" href="{{ route('pages.'.($mode === 'seo' ? 'web-crawler' : 'seo-audit')) }}">{{ $mode === 'seo' ? 'Need more pages? Open the website crawler' : 'Need one page? Open the SEO audit' }}</a>
     </div>
     @if ($recentReports->count() > 1)
         <details class="mt-4"><summary>Recent reports from this browser session</summary>
@@ -41,7 +44,7 @@
         <div class="mt-4 w3-panel w3-pale-green w3-leftbar w3-border-teal w3-round-large" role="status"><strong>{{ $report->status === 'stopped' ? 'Paused' : ucfirst($report->status) }}</strong> &middot; {{ count($report->data['pages']) }} / {{ $report->data['limit'] }} pages checked @if ($report->status === 'running') &middot; Checking {{ $report->data['stage'] }}. Results update as pages finish. Requests are spaced at least {{ $report->data['delay'] }} seconds apart.@endif</div>
         @if (($report->data['retry_at'] ?? 0) > time())<p class="small text-muted">The site requested a wait until {{ \Carbon\CarbonImmutable::createFromTimestampUTC($report->data['retry_at'])->format('M j, H:i:s') }} UTC. Resuming will keep that waiting time.</p>@endif
         <div class="my-3">
-            <a class="btn btn-primary w3-button w3-teal w3-round-large mr-2 mb-2" href="{{ route('services.site-report', $report) }}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square mr-1" aria-hidden="true"></i>View report<span class="sr-only"> (opens in a new tab)</span></a>
+            <a wire:navigate class="btn btn-primary w3-button w3-teal w3-round-large mr-2 mb-2" href="{{ route('pages.site-report', $report) }}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square mr-1" aria-hidden="true"></i>View report<span class="sr-only"> (opens in a new tab)</span></a>
             <button type="button" class="btn btn-primary mr-2 mb-2" wire:click="download('html')" wire:loading.attr="disabled"><i class="fa-solid fa-download mr-1" aria-hidden="true"></i>Download site report</button>
             <button type="button" class="btn btn-outline-primary mb-2" wire:click="download('json')" wire:loading.attr="disabled">Download data (JSON)</button>
             <button type="button" class="btn btn-outline-primary mb-2" wire:click="download('csv')" wire:loading.attr="disabled">Download spreadsheet (CSV)</button>

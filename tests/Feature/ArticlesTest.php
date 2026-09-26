@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Admins\Dashboard;
 use App\Livewire\Users\Articles;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -61,7 +63,7 @@ class ArticlesTest extends TestCase
             $this->assertNull($post->fresh()->published_at);
             $this->get(route('pages.postshow', $slug))->assertNotFound();
             $admin = User::factory()->create(['role' => 'admin']);
-            Livewire::actingAs($admin)->test(\App\Livewire\Admins\Dashboard::class)
+            Livewire::actingAs($admin)->test(Dashboard::class)
                 ->call('reviewArticle', $post->id)->assertSeeHtml('&lt;script&gt;alert(1)&lt;/script&gt;')
                 ->call('approveArticle', $post->id)->assertSee('Article approved and published.');
             $this->assertNotNull($post->fresh()->published_at);
@@ -84,7 +86,7 @@ class ArticlesTest extends TestCase
             try {
                 Livewire::actingAs($user)->test(Articles::class)->assertDontSee('Private draft')->call($action, $post->id);
                 $this->fail('Another account must not access the article.');
-            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $exception) {
+            } catch (ModelNotFoundException $exception) {
                 $this->assertSame(Post::class, $exception->getModel());
             }
         }
@@ -95,7 +97,7 @@ class ArticlesTest extends TestCase
     {
         $post = $this->article(User::factory()->create());
         $admin = User::factory()->create(['role' => 'admin']);
-        $component = Livewire::actingAs($admin)->test(\App\Livewire\Admins\Dashboard::class);
+        $component = Livewire::actingAs($admin)->test(Dashboard::class);
         $admin->update(['role' => 'user']);
         $component->call('approveArticle', $post->id)->assertForbidden();
         $this->assertSame('draft', $post->fresh()->status);
@@ -107,7 +109,7 @@ class ArticlesTest extends TestCase
         $author = User::factory()->create();
         $post = $this->article($author);
         $admin = User::factory()->create(['role' => 'admin']);
-        $component = Livewire::actingAs($admin)->test(\App\Livewire\Admins\Dashboard::class)
+        $component = Livewire::actingAs($admin)->test(Dashboard::class)
             ->call('reviewArticle', $post->id)
             ->set('remarkMessage', '   ')->call('sendRemark')->assertHasErrors('remarkMessage')
             ->set('remarkMessage', 'Please remove the insulting language. <script>alert(1)</script>')
@@ -131,7 +133,7 @@ class ArticlesTest extends TestCase
     {
         $post = $this->article(User::factory()->create());
         $admin = User::factory()->create(['role' => 'admin']);
-        $component = Livewire::actingAs($admin)->test(\App\Livewire\Admins\Dashboard::class)
+        $component = Livewire::actingAs($admin)->test(Dashboard::class)
             ->assertSee('Private draft')->call('reviewArticle', $post->id)
             ->assertSee('Draft text')->assertSee('Archive')->assertSee('Publish')
             ->call('publishReviewedArticle')->assertSet('reviewPostId', null);
@@ -168,5 +170,74 @@ class ArticlesTest extends TestCase
             $post->save();
         }
         $this->get(route('pages.articles'))->assertOk()->assertDontSee('Private draft');
+    }
+
+    public function test_trash_can_be_filtered_and_restored_only_by_its_author(): void
+    {
+        $author = User::factory()->create();
+        $post = $this->article($author);
+        $post->forceFill(['status' => 'published', 'published_at' => now()])->save();
+        $component = Livewire::actingAs($author)->test(Articles::class)
+            ->call('delete', $post->id)->assertDontSee('Private draft')
+            ->set('filter', 'trash')->assertSee('Private draft');
+        $this->assertSoftDeleted($post);
+        $component->call('restore', $post->id)->assertDontSee('Private draft');
+        $this->assertNotSoftDeleted($post);
+        $this->assertSame('draft', $post->fresh()->status);
+        $this->assertNull($post->fresh()->published_at);
+        $post->delete();
+        try {
+            Livewire::actingAs(User::factory()->create())->test(Articles::class)->call('restore', $post->id);
+            $this->fail('Another account must not restore the article.');
+        } catch (ModelNotFoundException $exception) {
+            $this->assertSame(Post::class, $exception->getModel());
+        }
+        $this->assertSoftDeleted($post);
+    }
+
+    public function test_stale_editor_preserves_unsaved_work_and_does_not_overwrite_changes(): void
+    {
+        $author = User::factory()->create();
+        $post = $this->article($author);
+        $component = Livewire::actingAs($author)->test(Articles::class)->call('edit', $post->id);
+        $post->update(['content' => 'Changed in another tab']);
+        $component->set('content', 'My unsaved edits')->call('save')
+            ->assertHasErrors('conflict')->assertSet('showEditor', true)->assertSet('content', 'My unsaved edits');
+        $this->assertSame('Changed in another tab', $post->fresh()->content);
+        $post->delete();
+        $component->call('save')->assertHasErrors('conflict');
+        $this->assertSoftDeleted($post);
+    }
+
+    public function test_admin_cannot_publish_a_revision_that_changed_during_review(): void
+    {
+        $post = $this->article(User::factory()->create());
+        $admin = User::factory()->create(['role' => 'admin']);
+        $component = Livewire::actingAs($admin)->test(Dashboard::class)
+            ->call('reviewArticle', $post->id);
+        $post->update(['content' => 'Unreviewed revision']);
+        $component->call('publishReviewedArticle')->assertHasErrors('reviewConflict');
+        $this->assertSame('draft', $post->fresh()->status);
+        $component->call('reviewArticle', $post->id)->call('publishReviewedArticle')->assertHasNoErrors();
+        $this->assertSame('published', $post->fresh()->status);
+        $component->call('reviewArticle', $post->id);
+        $post->delete();
+        $component->call('archiveReviewedArticle')->assertSee('This article is no longer available.');
+        $this->assertSoftDeleted($post);
+    }
+
+    public function test_archive_and_status_filters_are_scoped_to_author(): void
+    {
+        $author = User::factory()->create();
+        $post = $this->article($author);
+        $other = $this->article(User::factory()->create());
+        $other->update(['title' => 'Another account story']);
+        Livewire::actingAs($author)->test(Articles::class)
+            ->call('archive', $post->id)->set('filter', 'draft')->assertDontSee('Private draft')
+            ->set('filter', 'archived')->assertSee('Private draft')->assertDontSee('Another account story')
+            ->set('search', 'Missing title')->assertDontSee('Private draft')
+            ->call('clearFilters')->assertSee('Private draft')->assertSet('filter', '');
+        $this->assertSame('archived', $post->fresh()->status);
+        $this->assertSame('draft', $other->fresh()->status);
     }
 }

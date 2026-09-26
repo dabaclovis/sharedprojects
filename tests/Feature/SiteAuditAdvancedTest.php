@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\SiteInspector;
+use App\Livewire\Pages\SiteInspector;
 use App\Models\SiteReport;
 use App\Services\SiteAudit\Analyzer;
 use App\Services\SiteAudit\Discovery;

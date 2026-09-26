@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Pages\Products;
-use App\Livewire\Services\Affiliates;
+use App\Livewire\Users\Products as Affiliates;
 use App\Models\AffiliateProduct;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -28,7 +28,7 @@ class AffiliateProductsTest extends TestCase
     {
         foreach (['user', 'admin'] as $role) {
             $user = User::factory()->create(['role' => $role]);
-            $this->actingAs($user)->get(route('services.affiliates'))->assertOk();
+            $this->actingAs($user)->get(route('users.products'))->assertOk();
             $component = Livewire::actingAs($user)->test(Affiliates::class)->call('create')
                 ->call('save')->assertHasErrors(['title', 'description', 'merchant', 'affiliate_url'])
                 ->set('title', 'Headphones')->set('description', 'Product description')->set('merchant', 'Store')
@@ -79,7 +79,7 @@ class AffiliateProductsTest extends TestCase
 
     public function test_ownership_and_authentication_are_enforced(): void
     {
-        $this->get(route('services.affiliates'))->assertRedirect(route('auth.login'));
+        $this->get(route('users.products'))->assertRedirect(route('auth.login'));
         $product = $this->product(User::factory()->create());
         $other = User::factory()->create();
         foreach (['edit', 'delete'] as $action) {

@@ -22,7 +22,7 @@
                             <details class="mb-3"><summary>Product details</summary><p class="mt-2 product-description">{{ $product->description }}</p></details>
                             <p class="font-weight-bold">{{ $product->price !== null ? $product->currency.' '.number_format((float) $product->price, 2) : 'See merchant for price' }}</p>
                             <p class="small text-muted">Price and availability may change. Updated {{ $product->updated_at->format('M j, Y') }}.</p>
-                            <a class="btn btn-primary mt-auto" href="{{ route('products.visit', $product->id) }}" target="_blank" rel="sponsored nofollow noopener noreferrer">Visit merchant <i class="fa-solid fa-arrow-up-right-from-square ml-1" aria-hidden="true"></i><span class="sr-only"> (opens in a new tab)</span></a>
+                            <a class="btn btn-primary mt-auto" href="{{ route('pages.products.visit', $product->id) }}" target="_blank" rel="sponsored nofollow noopener noreferrer">Visit merchant <i class="fa-solid fa-arrow-up-right-from-square ml-1" aria-hidden="true"></i><span class="sr-only"> (opens in a new tab)</span></a>
                         </div>
                     </article>
                 </div>

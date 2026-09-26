@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\AgeCalculator;
+use App\Livewire\Pages\AgeCalculator;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -15,8 +15,8 @@ class AgeCalculatorTest extends TestCase
     public function test_guest_access_and_elapsed_totals(): void
     {
         $this->travelTo(Carbon::parse('2024-03-01 01:02:03', 'UTC'));
-        $this->get(route('services.age-calculator'))->assertOk()->assertSee('No account needed');
-        $this->get('/')->assertSee(route('services.age-calculator'));
+        $this->get(route('pages.age-calculator'))->assertOk()->assertSee('No account needed');
+        $this->get('/')->assertSee(route('pages.age-calculator'));
         Livewire::test(AgeCalculator::class)->set('dateOfBirth', '2024-02-29')->call('calculate')
             ->assertHasNoErrors()->assertSet('totals.Seconds', 90123)->assertSet('totals.Minutes', 1502)
             ->assertSet('totals.Hours', 25)->assertSet('totals.Days', 1)->assertSet('totals.Weeks', 0)

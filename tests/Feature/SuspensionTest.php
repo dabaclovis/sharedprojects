@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Auths\Login;
-use App\Livewire\Services\Users;
+use App\Livewire\Admins\Users;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;

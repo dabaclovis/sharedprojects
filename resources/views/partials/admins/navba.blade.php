@@ -1,1 +1,1 @@
-@include('partials.users.nav')
+@include('partials.workspace-nav', ['administration' => true])

@@ -5,8 +5,8 @@
                 <div class="mb-3 mb-md-0">
                     <p class="posts-eyebrow mb-2">Your workspace</p>
                     <h1 class="h2 font-weight-bold">Welcome back, {{ $user->name }}.</h1>
-                    <p class="mb-0 text-muted">Keep track of your stories and see what is ready to share.</p>
-                    <div class="mt-3 d-flex flex-wrap" style="gap: .5rem;"><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('services.affiliates') }}">Affiliate products</a><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('services.calendar') }}">My calendar</a></div>
+                    <p class="mb-0 text-muted">Write articles, manage your products, and plan your next event.</p>
+                    <div class="mt-3 d-flex flex-wrap" style="gap: .5rem;"><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('users.products') }}">Affiliate products</a><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('users.calendar') }}">My calendar</a></div>
                 </div>
             </div>
         </header>
@@ -80,8 +80,8 @@
                             <button type="button" class="btn btn-outline-primary btn-sm" wire:click="clearFilters">Clear
                                 filters</button>
                             @else
-                            @guest <a wire:navigate href="{{ route('pages.articles') }}" class="btn btn-outline-primary btn-sm">Explore
-                                community posts</a> @endguest
+                            <a wire:navigate href="{{ route('pages.articles') }}" class="btn btn-outline-primary btn-sm">Explore
+                                community posts</a>
                             @endif
                         </div>
                         @endforelse
@@ -93,11 +93,28 @@
             </section>
 
             <aside class="col-lg-4" aria-label="Community">
+                <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-events">
+                    <h2 id="workspace-events" class="h6 font-weight-bold">Coming up</h2>
+                    @forelse ($upcomingEvents as $event)
+                        <div class="border-bottom py-2" wire:key="upcoming-{{ $event->id }}">
+                            <p class="mb-1 font-weight-bold">{{ $event->title }}</p>
+                            <p class="small text-muted mb-0">{{ $event->starts_at->setTimezone($event->timezone)->format('M j, Y H:i') }} {{ $event->timezone }}</p>
+                        </div>
+                    @empty
+                        <p class="small text-muted">Your schedule is clear. Plan your next event in your calendar.</p>
+                    @endforelse
+                    <a wire:navigate class="d-inline-block mt-3" href="{{ route('users.calendar') }}">Open my calendar &rarr;</a>
+                </section>
+                <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-products">
+                    <h2 id="workspace-products" class="h6 font-weight-bold">My products</h2>
+                    <p class="small text-muted">{{ $productCount }} {{ \Illuminate\Support\Str::plural('product', $productCount) }} in your workspace.</p>
+                    <a wire:navigate href="{{ route('users.products') }}">Manage my products &rarr;</a>
+                </section>
                 <div class="dashboard-panel p-4">
                     <h2 class="h6 font-weight-bold">Find your next idea</h2>
                     <p class="small text-muted">Discover stories and fresh perspectives from the community.</p>
-                    @guest <a wire:navigate href="{{ route('pages.articles') }}">Browse posts <i class="fa-solid fa-arrow-right ml-1"
-                            aria-hidden="true"></i></a> @endguest
+                    <a wire:navigate href="{{ route('pages.articles') }}">Browse posts <i class="fa-solid fa-arrow-right ml-1"
+                            aria-hidden="true"></i></a>
                 </div>
             </aside>
         </div>

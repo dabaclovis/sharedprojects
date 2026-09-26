@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admins;
 
+use App\Enums\QuoteCategory;
 use App\Models\AffiliateProduct;
 use App\Models\ContactMessage;
 use App\Models\Event;
@@ -9,8 +10,11 @@ use App\Models\Post;
 use App\Models\Quote;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Livewire\Attributes\Title;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -60,18 +64,21 @@ class Dashboard extends Component
         foreach (['title', 'author', 'source', 'tags', 'language'] as $field) {
             $rules['quoteFields.'.$field] = ['nullable', 'string', 'max:255'];
         }
-        $rules['quoteFields.category'] = ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\QuoteCategory::class)];
+        $rules['quoteFields.category'] = ['nullable', Rule::enum(QuoteCategory::class)];
         foreach (['licon', 'ricon'] as $field) {
-            $rules['quoteFields.'.$field] = ['required', \Illuminate\Validation\Rule::in(array_keys(Quote::ICONS))];
+            $rules['quoteFields.'.$field] = ['required', Rule::in(array_keys(Quote::ICONS))];
         }
         $data = $this->validate($rules);
-        $quote->fill(\Illuminate\Support\Arr::only($data['quoteFields'], ['title', 'content', 'author', 'source', 'tags', 'category', 'language', 'licon', 'ricon']))->save();
+        $quote->fill(Arr::only($data['quoteFields'], ['title', 'content', 'author', 'source', 'tags', 'category', 'language', 'licon', 'ricon']))->save();
         $this->closeQuoteEditor();
         session()->flash('quoteStatus', 'Quote updated.');
     }
 
     #[Locked]
     public ?int $reviewPostId = null;
+
+    #[Locked]
+    public ?string $reviewRevision = null;
 
     public string $remarkMessage = '';
 
@@ -91,7 +98,10 @@ class Dashboard extends Component
     {
         $this->reset('remarkMessage');
         $this->resetValidation();
-        $this->reviewPostId = Post::findOrFail($id)->id;
+        $this->closeQuoteEditor();
+        $post = Post::findOrFail($id);
+        $this->reviewPostId = $post->id;
+        $this->reviewRevision = hash('sha256', json_encode($post->getRawOriginal(), JSON_THROW_ON_ERROR));
     }
 
     public function closeReview(): void
@@ -99,25 +109,42 @@ class Dashboard extends Component
         $this->reset('remarkMessage');
         $this->resetValidation();
         $this->reviewPostId = null;
+        $this->reviewRevision = null;
     }
 
     public function publishReviewedArticle(): void
     {
-        $post = Post::findOrFail($this->reviewPostId);
-        $post->status = 'published';
-        $post->published_at = now();
-        $post->save();
+        if (! $this->changeReviewedStatus('published')) {
+            return;
+        }
         $this->closeReview();
         session()->flash('approvalStatus', 'Article approved and published.');
     }
 
     public function archiveReviewedArticle(): void
     {
-        $post = Post::findOrFail($this->reviewPostId);
-        $post->status = 'archived';
-        $post->save();
+        if (! $this->changeReviewedStatus('archived')) {
+            return;
+        }
         $this->closeReview();
         session()->flash('approvalStatus', 'Article archived.');
+    }
+
+    private function changeReviewedStatus(string $status): bool
+    {
+        return DB::transaction(function () use ($status) {
+            $post = Post::lockForUpdate()->find($this->reviewPostId);
+            if (! $post || $this->reviewRevision !== hash('sha256', json_encode($post->getRawOriginal(), JSON_THROW_ON_ERROR))) {
+                $this->addError('reviewConflict', 'This article changed or was deleted. Close this review and reopen the article before taking action.');
+
+                return false;
+            }
+            $post->status = $status;
+            $post->published_at = $status === 'published' ? ($post->published_at && $post->published_at->lte(now()) ? $post->published_at : now()) : null;
+            $post->save();
+
+            return true;
+        });
     }
 
     public function boot(): void
@@ -127,6 +154,8 @@ class Dashboard extends Component
 
     public function updatedSection(): void
     {
+        $this->closeReview();
+        $this->closeQuoteEditor();
         $this->reset('search', 'status');
         $this->resetPage();
     }
@@ -150,11 +179,16 @@ class Dashboard extends Component
     public function approveArticle(int $id): void
     {
         abort_unless(auth()->check() && auth()->user()->role === 'admin' && auth()->user()->status === 'active', 403);
-        Post::whereKey($id)->where('status', 'draft')->firstOrFail();
-        Post::whereKey($id)->where('status', 'draft')->update([
+        if ($this->reviewPostId === $id) {
+            $this->publishReviewedArticle();
+
+            return;
+        }
+        $updated = Post::whereKey($id)->where('status', 'draft')->update([
             'status' => 'published',
             'published_at' => now(),
         ]);
+        abort_unless($updated, 404);
         session()->flash('approvalStatus', 'Article approved and published.');
     }
 
@@ -165,7 +199,7 @@ class Dashboard extends Component
         $query = match ($section) {
             'products' => AffiliateProduct::query()->with('user:id,name,status')->select(['id', 'user_id', 'title', 'status', 'clicks', 'updated_at']),
             'quotes' => Quote::query()->select(['id', 'title', 'content', 'author', 'source', 'category', 'language', 'updated_at']),
-            default => Post::query()->with('author:id,name')->select(['id', 'author_id', 'title', 'slug', 'excerpt', 'content', 'status', 'published_at', 'updated_at']),
+            default => Post::query()->with('author:id,name')->select(['id', 'author_id', 'title', 'slug', 'status', 'published_at', 'updated_at']),
         };
         $search = mb_substr(trim($this->search), 0, 200);
         $query->when($search !== '', fn ($query) => $query->where(function ($query) use ($search, $section) {
@@ -181,7 +215,7 @@ class Dashboard extends Component
         $now = CarbonImmutable::now('UTC');
 
         return view('livewire.admins.dashboard', [
-            'reviewPost' => $this->reviewPostId ? Post::with(['author:id,name', 'remarks.admin:id,name'])->findOrFail($this->reviewPostId) : null,
+            'reviewPost' => $this->reviewPostId ? Post::with(['author:id,name', 'remarks.admin:id,name'])->find($this->reviewPostId) : null,
             'activeSection' => $section,
             'records' => $query->orderByDesc('updated_at')->orderByDesc('id')->paginate(8),
             'stats' => [

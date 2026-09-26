@@ -1,6 +1,7 @@
 <div class="admin-dashboard py-4">
     @if (session('quoteStatus'))<div class="alert alert-success" role="status">{{ session('quoteStatus') }}</div>@endif
     @if (session('approvalStatus')) <div class="alert alert-success" role="status">{{ session('approvalStatus') }}</div> @endif
+    @if ($reviewPostId && ! $reviewPost)<div class="alert alert-warning" role="alert">This article is no longer available.<button class="btn btn-link btn-sm" wire:click="closeReview">Dismiss</button></div>@endif
     <header class="admin-welcome p-4 p-md-5 mb-4 d-flex flex-wrap align-items-center justify-content-between">
         <div>
             <p class="small text-uppercase font-weight-bold mb-2">CD administration</p>
@@ -11,10 +12,13 @@
     </header>
 
     <nav class="d-flex flex-wrap mb-4" style="gap: .5rem;" aria-label="Dashboard shortcuts">
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.ratings') }}">Visitor ratings</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.website-audits') }}">Paid website audits</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.sponsorships') }}">Sponsorships</a>
         <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.users') }}">Manage accounts</a>
-        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.articles') }}">My articles</a>
-        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.products') }}">My products</a>
-        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.calendar') }}">My calendar</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.articles') }}">Manage articles</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.products') }}">Manage products</a>
+        <a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('admins.calendar') }}">Manage events</a>
     </nav>
 
     <section class="row" aria-label="Application statistics">
@@ -43,7 +47,7 @@
             <div class="dashboard-panel p-3 p-md-4 h-100">
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
                     <h2 id="content-heading" class="h5 mb-2">Content overview</h2>
-                    <a wire:navigate class="small" href="{{ route('admins.pages.'.$activeSection) }}">View public {{ $activeSection }} &rarr;</a>
+                    <a wire:navigate class="small" href="{{ route('pages.'.$activeSection) }}">View public {{ $activeSection }} &rarr;</a>
                 </div>
                 <div class="btn-group mb-3" role="group" aria-label="Content type">
                     @foreach (['articles' => 'Articles', 'products' => 'Products', 'quotes' => 'Quotes'] as $value => $label)
@@ -92,10 +96,10 @@
                                 <button type="button" class="btn btn-outline-primary btn-sm mb-2" wire:click="reviewArticle({{ $record->id }})">Review / Manage</button>
                             @endif
                             @if ($activeSection === 'articles' && $isLive)
-                                <a wire:navigate class="small mr-3" href="{{ route('admins.pages.postshow', $record->slug) }}">Read article &rarr;</a>
+                                <a wire:navigate class="small mr-3" href="{{ route('pages.postshow', $record->slug) }}">Read article &rarr;</a>
                             @endif
                             @if ($owner?->id === auth()->id())
-                                <a wire:navigate class="small" href="{{ route($activeSection === 'products' ? 'admins.products' : 'admins.articles') }}">Manage my {{ $activeSection }}</a>
+                                <a wire:navigate class="small" href="{{ route($activeSection === 'products' ? 'users.products' : 'users.articles') }}">Manage my {{ $activeSection }}</a>
                             @endif
                             @if ($activeSection === 'products' && $record->status === 'published' && ! $isLive)
                                 <span class="small text-muted">Hidden publicly: contributor account is inactive.</span>
@@ -107,7 +111,7 @@
                 </div>
                 <div class="mt-3">{{ $records->links(data: ['scrollTo' => false]) }}</div>
                 @if ($activeSection !== 'quotes')
-                    <a wire:navigate class="small" href="{{ route($activeSection === 'products' ? 'admins.products' : 'admins.articles') }}">Create and manage my {{ $activeSection }} &rarr;</a>
+                    <a wire:navigate class="small" href="{{ route($activeSection === 'products' ? 'users.products' : 'users.articles') }}">Create and manage my {{ $activeSection }} &rarr;</a>
                 @endif
             </div>
         </section>
@@ -152,7 +156,7 @@
                     <p class="small text-muted py-3">No scheduled events.</p>
                 @endforelse
                 <div class="mt-3">{{ $scheduledEvents->links(data: ['scrollTo' => false]) }}</div>
-                <a wire:navigate class="small" href="{{ route('admins.calendar') }}">Open my calendar &rarr;</a>
+                <a wire:navigate class="small" href="{{ route('admins.calendar') }}">Manage all events &rarr;</a>
             </section>
         </aside>
     </div>
@@ -161,7 +165,7 @@
             <section class="article-modal card" role="dialog" aria-modal="true" aria-labelledby="edit-quote-heading" x-trap.inert.noscroll="true">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h2 id="edit-quote-heading" class="h5 mb-0">Edit quote #{{ $editingQuoteId }}</h2>
-                    <button type="button" class="close" wire:click="closeQuoteEditor" aria-label="Close quote editor">&times;</button>
+                    <button type="button" class="w3-button w3-round btn btn-sm modal-close-button" wire:click="closeQuoteEditor" aria-label="Close quote editor"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <form class="card-body" wire:submit="saveQuote">
                     <label for="admin-quote-content">Quote</label>
@@ -190,10 +194,11 @@
             <section class="article-modal card" role="dialog" aria-modal="true" aria-labelledby="review-heading" x-trap.inert.noscroll="true">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h2 id="review-heading" class="h5 mb-0">{{ $reviewPost->title }}</h2>
-                    <button type="button" class="close" x-ref="closeReview" wire:click="closeReview" aria-label="Close review">&times;</button>
+                    <button type="button" class="w3-button w3-round btn btn-sm modal-close-button" x-ref="closeReview" wire:click="closeReview" aria-label="Close review"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="card-body">
                     <p class="small text-muted">{{ $reviewPost->author?->name ?? 'Deleted account' }} &middot; {{ ucfirst($reviewPost->status) }}</p>
+                    @error('reviewConflict')<p class="alert alert-warning" role="alert">{{ $message }}</p>@enderror
                     @if ($reviewPost->excerpt)<p>{{ $reviewPost->excerpt }}</p>@endif
                     <div style="white-space: pre-wrap; overflow-wrap: anywhere;">{{ $reviewPost->content }}</div>
                     <hr>

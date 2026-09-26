@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\TextToolkit;
+use App\Livewire\Pages\TextToolkit;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -13,8 +13,8 @@ class TextToolkitTest extends TestCase
 
     public function test_guests_can_find_and_open_toolkit(): void
     {
-        $this->get(route('services.text-toolkit'))->assertOk()->assertSee('No account needed');
-        $this->get('/')->assertSee(route('services.text-toolkit'));
+        $this->get(route('pages.text-toolkit'))->assertOk()->assertSee('No account needed');
+        $this->get('/')->assertSee(route('pages.text-toolkit'));
         $this->assertGuest();
     }
 

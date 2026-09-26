@@ -2,8 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Livewire\Services\SiteInspector;
+use App\Livewire\Pages\SiteInspector;
 use App\Models\SiteReport;
+use App\Models\User;
 use App\Services\SiteAudit\Analyzer;
 use App\Services\SiteAudit\SafeFetcher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -22,7 +23,7 @@ class SiteInspectorTest extends TestCase
 
     public function test_public_routes_and_home_links(): void
     {
-        foreach (['services.seo-audit', 'services.web-crawler'] as $route) {
+        foreach (['pages.seo-audit', 'pages.web-crawler'] as $route) {
             $this->get(route($route))->assertOk()->assertSee('No account needed');
             $this->get('/')->assertSee(route($route));
         }
@@ -38,7 +39,10 @@ class SiteInspectorTest extends TestCase
         $this->app->instance(SafeFetcher::class, $fake);
         $component = Livewire::test(SiteInspector::class)->set('url', 'https://example.com/')->call('start')->assertHasNoErrors()->call('step');
         for ($i = 0; $i < 2; $i++) {
-            $report = SiteReport::first(); $data = $report->data; $data['next_at'] = 0; $report->update(['data' => $data]);
+            $report = SiteReport::first();
+            $data = $report->data;
+            $data['next_at'] = 0;
+            $report->update(['data' => $data]);
             $component->call('step');
         }
         $report = SiteReport::first();
@@ -50,6 +54,37 @@ class SiteInspectorTest extends TestCase
             ->call('download', 'csv')->assertFileDownloaded('site-report.csv');
         $report->update(['owner_hash' => str_repeat('x', 64)]);
         $component->call('download', 'html')->assertStatus(404);
+    }
+
+    public function test_audit_accepts_a_bare_domain_and_report_link_works_only_for_its_session(): void
+    {
+        $component = Livewire::test(SiteInspector::class)->set('url', '  example.com  ')->call('start')->assertHasNoErrors();
+        $report = SiteReport::firstOrFail();
+        $this->assertSame('https://example.com/', $report->url);
+        $component->assertSee(route('pages.site-report', $report));
+        $this->withCookie(config('session.cookie'), session()->getId());
+        $this->get(route('pages.site-report', $report))->assertOk()->assertSee('Report for https://example.com/')
+            ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+        $report->update(['owner_hash' => str_repeat('x', 64)]);
+        $this->get(route('pages.site-report', $report))->assertNotFound();
+    }
+
+    public function test_non_web_schemes_still_fail_validation(): void
+    {
+        foreach (['javascript:alert(1)', 'file:///etc/passwd', 'ftp://example.com'] as $url) {
+            Livewire::test(SiteInspector::class)->set('url', $url)->call('start')->assertHasErrors('url');
+        }
+        $this->assertDatabaseCount('site_reports', 0);
+    }
+
+    public function test_signed_in_users_can_reach_audit_tools_and_admin_crawler_uses_crawler_mode(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)->get(route('pages.index'))->assertOk()->assertSee(route('pages.seo-audit'));
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $this->get(route('pages.index'))->assertOk()->assertSee(route('pages.seo-audit'));
+        $this->get(route('pages.seo-audit'))->assertOk()->assertSee('Start SEO audit');
+        $this->get(route('pages.web-crawler'))->assertOk()->assertSee('Maximum pages')->assertSee('Start crawl');
     }
 
     public function test_analyzer_resolves_links_and_explains_indexing(): void
@@ -68,8 +103,12 @@ class SiteInspectorTest extends TestCase
     public function test_private_and_special_addresses_are_never_fetched(): void
     {
         foreach (['http://127.0.0.1/', 'http://10.1.2.3/', 'http://169.254.169.254/', 'http://100.100.100.100/', 'http://192.0.2.1/', 'file:///etc/passwd', 'https://example.com:8080/', 'http://user:pass@example.com/'] as $url) {
-            try { (new SafeFetcher)->fetch($url); $this->fail('Unsafe URL accepted: '.$url); }
-            catch (\RuntimeException $e) { $this->assertNotEmpty($e->getMessage()); }
+            try {
+                (new SafeFetcher)->fetch($url);
+                $this->fail('Unsafe URL accepted: '.$url);
+            } catch (\RuntimeException $e) {
+                $this->assertNotEmpty($e->getMessage());
+            }
         }
     }
 
@@ -93,7 +132,8 @@ class SiteInspectorTest extends TestCase
         $page = $analyzer->analyze($response);
         $this->assertSame('http://127.0.0.1/', $page['redirect']);
         $this->assertSame(302, $page['status']);
-        $page['title'] = '<script>alert(1)</script>'; $page['depth'] = 0;
+        $page['title'] = '<script>alert(1)</script>';
+        $page['depth'] = 0;
         $report = new SiteReport(['url' => 'https://example.com/', 'status' => 'complete', 'data' => ['pages' => [$page], 'skipped' => 0, 'notes' => []]]);
         $report->created_at = now();
         $html = view('reports.site-download', compact('report'))->render();
@@ -111,9 +151,14 @@ class SiteInspectorTest extends TestCase
         $fake->shouldReceive('fetch')->with('https://example.com/next')->once()->andReturn($this->response('https://example.com/next', '<title>Same</title>'));
         $this->app->instance(SafeFetcher::class, $fake);
         $component = new SiteInspector;
-        $component->mode = 'crawler'; $component->url = 'https://example.com/'; $component->start();
+        $component->mode = 'crawler';
+        $component->url = 'https://example.com/';
+        $component->start();
         for ($i = 0; $i < 4; $i++) {
-            $report = SiteReport::first(); $data = $report->data; $data['next_at'] = 0; $report->update(['data' => $data]);
+            $report = SiteReport::first();
+            $data = $report->data;
+            $data['next_at'] = 0;
+            $report->update(['data' => $data]);
             $component->step();
         }
         $report = SiteReport::first();

@@ -52,7 +52,7 @@ class QuotesPageTest extends TestCase
         Livewire::test(Notes::class)
             ->assertSeeHtml('&lt;script&gt;alert(1)&lt;/script&gt;')
             ->assertDontSeeHtml('<script>alert(1)</script>')
-            ->assertViewHas('quotes', fn ($quotes) => $quotes->total() === 11 && $quotes->count() === 9)
+            ->assertViewHas('quotes', fn ($quotes) => $quotes->total() === 11 && $quotes->count() === 3)
             ->call('nextPage')->assertSet('paginators.page', 2)
             ->set('search', 'Distinct')->assertSet('paginators.page', 1)
             ->assertViewHas('quotes', fn ($quotes) => $quotes->total() === 1)

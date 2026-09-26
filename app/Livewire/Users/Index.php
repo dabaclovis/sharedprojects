@@ -52,6 +52,10 @@ class Index extends Component
         return view('livewire.users.index', [
             'user' => $user,
             'posts' => $posts,
+            'productCount' => $user->affiliateProducts()->count(),
+            'upcomingEvents' => $user->events()->where('status', 'scheduled')
+                ->where('ends_at', '>=', now('UTC'))->orderBy('starts_at')->limit(3)
+                ->get(['id', 'title', 'starts_at', 'timezone']),
             'stats' => [
                 'Total posts' => $counts->sum(),
                 'Drafts' => (int) ($counts['draft'] ?? 0),
