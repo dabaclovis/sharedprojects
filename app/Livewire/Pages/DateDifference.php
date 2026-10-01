@@ -3,10 +3,17 @@
 namespace App\Livewire\Pages;
 
 use Carbon\CarbonImmutable;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free date difference calculator')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Date Difference Calculator | Days Between Dates',
+        'description' => 'Calculate the exact time between two dates in days, weeks and calendar intervals, with an optional inclusive count.',
+        'keywords' => 'date difference calculator, days between dates, date duration, calendar calculator',
+    ]
+)]
 class DateDifference extends Component
 {
     public string $startDate = '';

@@ -3,9 +3,16 @@
 namespace App\Livewire\Pages;
 
 use Livewire\Component;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 
-#[Title('Privacy and community policy')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Privacy, Content and Affiliate Policy | CD',
+        'description' => 'Review CD policies covering privacy, submitted content, affiliate links, acceptable use and platform responsibilities.',
+        'keywords' => 'privacy policy, content policy, affiliate disclosure, acceptable use',
+    ]
+)]
 class Policy extends Component
 {
     public function render()

@@ -9,11 +9,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('My articles')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Manage Your Articles | CD',
+        'description' => 'Write, revise, submit and manage your community articles from one workspace.',
+        'keywords' => 'manage articles, write articles, content workspace',
+    ]
+)]
 class Articles extends Component
 {
     use WithPagination;

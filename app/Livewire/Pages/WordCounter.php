@@ -2,10 +2,17 @@
 
 namespace App\Livewire\Pages;
 
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free word counter')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free Word and Character Counter | CD',
+        'description' => 'Count words, characters, non-space characters and estimated reading time for essays, posts and documents.',
+        'keywords' => 'word counter, character counter, reading time calculator, text length checker',
+    ]
+)]
 class WordCounter extends Component
 {
     public string $text = '';

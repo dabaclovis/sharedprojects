@@ -3,10 +3,17 @@
 namespace App\Livewire\Users;
 
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Your profile')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Your CD Profile',
+        'description' => 'Review your CD account identity and profile information.',
+        'keywords' => 'user profile, CD account, profile details',
+    ]
+)]
 class Profile extends Component
 {
     public function boot(): void

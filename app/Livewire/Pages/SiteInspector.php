@@ -10,9 +10,18 @@ use App\Services\SiteAudit\SafeFetcher;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free SEO Audit Tool | Check Your Web Page',
+        'description' => 'Run a free technical SEO audit to check page titles, descriptions, headings, links, indexing signals and common issues.',
+        'keywords' => 'free SEO audit, SEO checker, website analysis, technical SEO tool',
+    ]
+)]
 class SiteInspector extends Component
 {
     public string $url = '';

@@ -4,10 +4,17 @@ namespace App\Livewire\Pages;
 
 use App\Models\ContactMessage;
 use Illuminate\Support\Facades\RateLimiter;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Contact CD')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Contact CD | Questions, Feedback and Support',
+        'description' => 'Contact the CD team with questions, feedback, support requests or ideas for improving our tools and community resources.',
+        'keywords' => 'contact CD, customer support, website feedback, help request',
+    ]
+)]
 class Contact extends Component
 {
     public string $name = '';

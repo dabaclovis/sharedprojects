@@ -3,13 +3,20 @@
 namespace App\Livewire\Users;
 
 use Livewire\Component;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
-#[Title('Account settings')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Account and Security Settings | CD',
+        'description' => 'Update your account details, email address and password securely.',
+        'keywords' => 'account settings, security settings, change password',
+    ]
+)]
 class Setting extends Component
 {
     public string $name = '';

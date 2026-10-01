@@ -8,10 +8,17 @@ use App\Models\Reward;
 use App\Models\RewardFund;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Content rewards')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Content Rewards Management | CD Admin',
+        'description' => 'Manage the contributor reward fund and issue eligible article and quote rewards.',
+        'keywords' => 'content rewards, contributor payments, reward management',
+    ]
+)]
 class Rewards extends Component
 {
     public string $deposit = '';

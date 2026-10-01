@@ -3,10 +3,17 @@
 namespace App\Livewire\Pages;
 
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free percentage calculator')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free Percentage Calculator | Quick Results',
+        'description' => 'Calculate percentages, percentage changes and proportions quickly with a simple, accurate online calculator.',
+        'keywords' => 'percentage calculator, percent change calculator, calculate percentage, online calculator',
+    ]
+)]
 class PercentageCalculator extends Component
 {
     public string $mode = 'portion';

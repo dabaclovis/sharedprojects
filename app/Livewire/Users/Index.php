@@ -3,11 +3,18 @@
 namespace App\Livewire\Users;
 
 use Illuminate\Support\Facades\Auth;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('Your dashboard')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Your Content Dashboard | CD',
+        'description' => 'Review your content activity, publication status, products and upcoming events.',
+        'keywords' => 'user dashboard, content dashboard, account overview',
+    ]
+)]
 class Index extends Component
 {
     use WithPagination;

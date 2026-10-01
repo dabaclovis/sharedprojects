@@ -12,9 +12,9 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Sign in',
-        'description' => 'Sign in to your account',
-        'keywords' => 'login, sign in',
+        'title' => 'Sign In to Your CD Account',
+        'description' => 'Sign in securely to manage your articles, products, calendar and account settings.',
+        'keywords' => 'CD login, account sign in, member login',
     ]
 )]
 class Login extends Component

@@ -10,10 +10,17 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Business services')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Website Audits and Sponsorship Services | CD',
+        'description' => 'Request a professional website audit or explore transparent sponsorship opportunities for reaching the CD community.',
+        'keywords' => 'website audit services, SEO review, sponsorship opportunities, website consulting',
+    ]
+)]
 class BusinessServices extends Component
 {
     public string $service = 'website-audit';

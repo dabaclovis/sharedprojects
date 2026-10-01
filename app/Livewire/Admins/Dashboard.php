@@ -14,11 +14,18 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('Admin dashboard')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Administration Dashboard | CD',
+        'description' => 'Monitor users, content, products, events, quotes and messages across the CD platform.',
+        'keywords' => 'admin dashboard, content administration, platform management',
+    ]
+)]
 class Dashboard extends Component
 {
     use WithPagination;

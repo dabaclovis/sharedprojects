@@ -4,10 +4,17 @@ namespace App\Livewire\Pages;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free age calculator')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free Age Calculator | Exact Age and Time Lived',
+        'description' => 'Calculate an exact age and view total years, months, weeks, days, hours, minutes and seconds lived.',
+        'keywords' => 'age calculator, exact age, birthday calculator, how old am I',
+    ]
+)]
 class AgeCalculator extends Component
 {
     public string $dateOfBirth = '';

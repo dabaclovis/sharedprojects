@@ -8,10 +8,17 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('My calendar')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Your Personal Calendar and Weekly Planner | CD',
+        'description' => 'Plan appointments and activities across monthly and weekly calendar views in your preferred time zone.',
+        'keywords' => 'personal calendar, weekly planner, event organizer',
+    ]
+)]
 class Calendar extends Component
 {
     #[Locked]

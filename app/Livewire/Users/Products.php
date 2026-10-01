@@ -9,12 +9,19 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
-#[Title('My affiliate products')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Manage Your Product Recommendations | CD',
+        'description' => 'Create and maintain your product recommendations, images, prices and publication status.',
+        'keywords' => 'manage products, affiliate recommendations, product listings',
+    ]
+)]
 class Products extends Component
 {
     use WithFileUploads, WithPagination;

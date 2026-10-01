@@ -3,11 +3,18 @@
 namespace App\Livewire\Pages;
 
 use App\Models\AffiliateProduct;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('Product recommendations')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Recommended Products and Useful Finds | CD',
+        'description' => 'Explore useful product recommendations with clear details, pricing information and transparent affiliate disclosures.',
+        'keywords' => 'product recommendations, useful products, affiliate products, product discoveries',
+    ]
+)]
 class Products extends Component
 {
     use WithPagination;

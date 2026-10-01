@@ -3,9 +3,18 @@
 namespace App\Livewire\Admins;
 
 use App\Models\ApplicationRating;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Application Ratings and Feedback | CD Admin',
+        'description' => 'Review private application ratings and user feedback for service improvement.',
+        'keywords' => 'application ratings, user feedback, admin reviews',
+    ]
+)]
 class Ratings extends Component
 {
     use WithPagination;

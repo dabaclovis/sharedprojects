@@ -4,10 +4,17 @@ namespace App\Livewire\Pages;
 
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free freelance quote builder')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free Freelance Quote and Estimate Builder | CD',
+        'description' => 'Create a clear freelance project estimate with tasks, hours, rates, expenses, contingency and deposit calculations.',
+        'keywords' => 'freelance quote builder, project estimate calculator, pricing calculator, client quote',
+    ]
+)]
 class QuoteBuilder extends Component
 {
     public string $project = '';

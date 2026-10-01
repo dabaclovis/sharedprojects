@@ -6,11 +6,18 @@ use App\Enums\QuoteCategory;
 use App\Models\Quote;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
-#[Title('Community quotes')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Inspirational Quotes and Community Wisdom | CD',
+        'description' => 'Browse, search and share memorable quotes, thoughtful sayings and community-contributed words of wisdom.',
+        'keywords' => 'inspirational quotes, famous sayings, community quotes, words of wisdom',
+    ]
+)]
 class Notes extends Component
 {
     use WithPagination;

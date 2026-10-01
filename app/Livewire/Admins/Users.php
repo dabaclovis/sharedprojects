@@ -16,9 +16,9 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'users ~ management service',
-        'description' => 'This is the users page of my app.',
-        'keywords' => 'users, my app',
+        'title' => 'User Account Management | CD Admin',
+        'description' => 'Create, review, update, suspend and manage CD user accounts and permissions.',
+        'keywords' => 'user management, account administration, user permissions',
     ]
 )]
 class Users extends Component

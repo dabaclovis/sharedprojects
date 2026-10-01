@@ -11,10 +11,19 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Website Audit Orders | CD Admin',
+        'description' => 'Manage website audit requests, payments, findings and completed client reports.',
+        'keywords' => 'website audit orders, audit workflow, client reports',
+    ]
+)]
 class RevenueServices extends Component
 {
     use WithPagination;

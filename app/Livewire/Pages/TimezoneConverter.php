@@ -4,10 +4,17 @@ namespace App\Livewire\Pages;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free time zone converter')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Time Zone Converter | Compare Local Times',
+        'description' => 'Convert dates and times between global time zones with daylight-saving and ambiguous-time validation.',
+        'keywords' => 'time zone converter, world time converter, convert time zones, daylight saving time',
+    ]
+)]
 class TimezoneConverter extends Component
 {
     public string $dateTime = '';

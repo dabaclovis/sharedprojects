@@ -10,9 +10,9 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Discover stories ~ my app',
-        'description' => 'Discover the latest stories, ideas, and updates from our community.',
-        'keywords' => 'posts, stories, community',
+        'title' => 'Community Articles, Ideas and Stories | CD',
+        'description' => 'Read useful community-written articles, fresh ideas and practical stories across business, technology and everyday life.',
+        'keywords' => 'community articles, practical ideas, stories, business articles, technology articles',
     ]
 )]
 class Articles extends Component

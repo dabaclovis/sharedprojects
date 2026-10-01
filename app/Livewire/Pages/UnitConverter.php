@@ -3,10 +3,17 @@
 namespace App\Livewire\Pages;
 
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free unit converter')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free Unit Converter | Length and Weight',
+        'description' => 'Convert common length and weight measurements quickly with a straightforward, accurate online unit converter.',
+        'keywords' => 'unit converter, length converter, weight converter, measurement conversion',
+    ]
+)]
 class UnitConverter extends Component
 {
     public const UNITS = [

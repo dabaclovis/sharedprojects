@@ -8,10 +8,19 @@ use App\Models\Post;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Article Moderation | CD Admin',
+        'description' => 'Review, approve, archive, restore and provide feedback on community articles.',
+        'keywords' => 'article moderation, content review, publishing workflow',
+    ]
+)]
 class ContentManager extends Component
 {
     use WithPagination;

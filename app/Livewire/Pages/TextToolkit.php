@@ -3,10 +3,17 @@
 namespace App\Livewire\Pages;
 
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Title('Free text toolkit')]
+#[Layout(
+    'components.layouts.app',
+    [
+        'title' => 'Free Text Toolkit | Clean, Format and Count Text',
+        'description' => 'Clean and format text, change letter case, remove duplicate lines and check word, character and reading-time totals.',
+        'keywords' => 'text formatter, text cleaner, remove duplicate lines, case converter, word count',
+    ]
+)]
 class TextToolkit extends Component
 {
     public string $text = '';
