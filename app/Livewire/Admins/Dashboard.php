@@ -209,32 +209,54 @@ class Dashboard extends Component
             }
         }))->when($section !== 'quotes' && in_array($this->status, ['draft', 'published', 'archived'], true), fn ($query) => $query->where('status', $this->status));
 
-        $users = User::query()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
-        $posts = Post::query()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
-        $products = AffiliateProduct::query()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
         $now = CarbonImmutable::now('UTC');
+        $cutoff = $now->subDays(30);
+        $users = User::query()->selectRaw(
+            'COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active, SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent',
+            ['active', $cutoff]
+        )->first();
+        $posts = Post::query()->selectRaw(
+            'COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as drafts, SUM(CASE WHEN status = ? AND published_at IS NOT NULL AND published_at <= ? THEN 1 ELSE 0 END) as live',
+            ['draft', 'published', $now]
+        )->first();
+        $products = AffiliateProduct::query()->selectRaw(
+            'COUNT(*) as total, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as drafts, COALESCE(SUM(clicks), 0) as clicks',
+            ['draft']
+        )->first();
+        $events = Event::query()->selectRaw(
+            'COUNT(*) as total, SUM(CASE WHEN status = ? AND starts_at >= ? THEN 1 ELSE 0 END) as upcoming',
+            ['scheduled', $now]
+        )->first();
+        $quotes = Quote::query()->selectRaw(
+            'COUNT(*) as total, SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent',
+            [$cutoff]
+        )->first();
+        $contacts = ContactMessage::query()->selectRaw(
+            'COUNT(*) as total, SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as recent',
+            [$cutoff]
+        )->first();
 
         return view('livewire.admins.dashboard', [
             'reviewPost' => $this->reviewPostId ? Post::with(['author:id,name', 'remarks.admin:id,name'])->find($this->reviewPostId) : null,
             'activeSection' => $section,
             'records' => $query->orderByDesc('updated_at')->orderByDesc('id')->paginate(8),
             'stats' => [
-                'users' => (int) $users->sum(),
-                'activeUsers' => (int) ($users['active'] ?? 0),
-                'newUsers' => User::where('created_at', '>=', $now->subDays(30))->count(),
-                'articles' => (int) $posts->sum(),
-                'liveArticles' => Post::published()->count(),
-                'draftArticles' => (int) ($posts['draft'] ?? 0),
-                'products' => (int) $products->sum(),
+                'users' => (int) $users->total,
+                'activeUsers' => (int) $users->active,
+                'newUsers' => (int) $users->recent,
+                'articles' => (int) $posts->total,
+                'liveArticles' => (int) $posts->live,
+                'draftArticles' => (int) $posts->drafts,
+                'products' => (int) $products->total,
                 'liveProducts' => AffiliateProduct::published()->count(),
-                'draftProducts' => (int) ($products['draft'] ?? 0),
-                'clicks' => (int) AffiliateProduct::sum('clicks'),
-                'events' => Event::count(),
-                'upcomingEvents' => Event::where('status', 'scheduled')->where('starts_at', '>=', $now)->count(),
-                'quotes' => Quote::count(),
-                'newQuotes' => Quote::where('created_at', '>=', $now->subDays(30))->count(),
-                'contactMessages' => ContactMessage::count(),
-                'newContactMessages' => ContactMessage::where('created_at', '>=', $now->subDays(30))->count(),
+                'draftProducts' => (int) $products->drafts,
+                'clicks' => (int) $products->clicks,
+                'events' => (int) $events->total,
+                'upcomingEvents' => (int) $events->upcoming,
+                'quotes' => (int) $quotes->total,
+                'newQuotes' => (int) $quotes->recent,
+                'contactMessages' => (int) $contacts->total,
+                'newContactMessages' => (int) $contacts->recent,
             ],
             'recentUsers' => User::latest('id')->limit(5)->get(['id', 'name', 'email', 'role', 'status', 'created_at']),
             'contactMessages' => ContactMessage::latest('id')

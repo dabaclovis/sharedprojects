@@ -2,11 +2,24 @@
 <html lang="en">
 
 <head>
-    <title>{{ $title ?? config('app.name') }}</title>
+    @php
+        $routeName = request()->route()?->getName();
+        $routeSeo = config('seo.routes', [])[$routeName] ?? [];
+        $pageTitle = $routeSeo['title'] ?? $title ?? config('seo.defaults.title', config('app.name'));
+        $pageDescription = $routeSeo['description'] ?? $description ?? config('seo.defaults.description');
+        $pageKeywords = $routeSeo['keywords'] ?? $keywords ?? config('seo.defaults.keywords');
+        $isPrivateArea = request()->routeIs('auth.*', 'users.*', 'admins.*');
+    @endphp
+    <title>{{ $pageTitle }}</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="{{ $description ?? 'CD brings together community articles, product discoveries, and personal event scheduling.' }}">
+    <meta name="description" content="{{ $pageDescription }}">
+    <meta name="keywords" content="{{ $pageKeywords }}">
+    <meta name="robots" content="{{ $isPrivateArea ? 'noindex, nofollow' : 'index, follow' }}">
+    @unless ($isPrivateArea)
+        <link rel="canonical" href="{{ url()->current() }}">
+    @endunless
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand-mark.svg') }}">
 
     <!-- Bootstrap CSS -->

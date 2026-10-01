@@ -177,28 +177,33 @@ class Calendar extends Component
     public function render()
     {
         $zone = $this->displayTimezone();
+        $days = [];
+        $weekDays = [];
         $first = CarbonImmutable::parse($this->month.'-01', $zone)->startOfDay();
+        $weekStart = CarbonImmutable::parse($this->week, $zone)->startOfDay();
         $start = $first->startOfWeek();
         $end = $first->endOfMonth()->endOfWeek()->addDay()->startOfDay();
-        $events = Auth::user()->events()->where('starts_at', '<', $end->utc())
-            ->where('ends_at', '>', $start->utc())->orderBy('starts_at')->orderBy('id')->get();
-        $days = [];
+        $weekEnd = $weekStart->addWeek();
+
+        // Month and week ranges normally overlap. Load their union once and derive
+        // both presentations in memory instead of issuing two event queries.
+        $queryStart = $start->min($weekStart);
+        $queryEnd = $end->max($weekEnd);
+        $events = Auth::user()->events()->where('starts_at', '<', $queryEnd->utc())
+            ->where('ends_at', '>', $queryStart->utc())
+            ->orderBy('starts_at')->orderBy('id')->get();
+
         for ($day = $start; $day->lt($end); $day = $day->addDay()) {
             $days[] = [
                 'date' => $day,
                 'events' => $events->filter(fn ($event) => $event->starts_at->lt($day->addDay()->utc()) && $event->ends_at->gt($day->utc())),
             ];
         }
-
-        $weekStart = CarbonImmutable::parse($this->week, $zone)->startOfDay();
-        $weekEvents = Auth::user()->events()->where('status', 'scheduled')
-            ->where('starts_at', '<', $weekStart->addWeek()->utc())
-            ->where('ends_at', '>', $weekStart->utc())->orderBy('starts_at')->orderBy('id')->get();
-        $weekDays = [];
-        for ($day = $weekStart; $day->lt($weekStart->addWeek()); $day = $day->addDay()) {
+        $scheduled = $events->where('status', 'scheduled');
+        for ($day = $weekStart; $day->lt($weekEnd); $day = $day->addDay()) {
             $weekDays[] = [
                 'date' => $day,
-                'events' => $weekEvents->filter(fn ($event) => $event->starts_at->lt($day->addDay()->utc()) && $event->ends_at->gt($day->utc())),
+                'events' => $scheduled->filter(fn ($event) => $event->starts_at->lt($day->addDay()->utc()) && $event->ends_at->gt($day->utc())),
             ];
         }
 

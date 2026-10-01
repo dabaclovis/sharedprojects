@@ -4,7 +4,7 @@
         <button class="navbar-toggler" type="button" @click="open = !open" :aria-expanded="open.toString()" aria-expanded="false" aria-controls="workspace-navigation" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
         <div id="workspace-navigation" class="collapse navbar-collapse" :class="{ 'show': open }">
             <ul class="navbar-nav mr-auto">
-                @foreach (($administration ? ['admins.index' => 'Overview', 'admins.users' => 'Accounts', 'admins.articles' => 'Articles', 'admins.products' => 'Products', 'admins.calendar' => 'Events', 'admins.website-audits' => 'Website audits', 'admins.sponsorships' => 'Sponsorships'] : ['users.index' => 'Overview', 'users.articles' => 'My articles', 'users.products' => 'My products', 'users.calendar' => 'My calendar']) as $routeName => $label)
+                @foreach (($administration ? ['admins.index' => 'Overview', 'admins.users' => 'Accounts', 'admins.articles' => 'Articles', 'admins.products' => 'Products', 'admins.calendar' => 'Events', 'admins.rewards' => 'Rewards', 'admins.website-audits' => 'Website audits', 'admins.sponsorships' => 'Sponsorships'] : ['users.index' => 'Overview', 'users.articles' => 'My articles', 'users.products' => 'My products', 'users.calendar' => 'My calendar']) as $routeName => $label)
                     <li class="nav-item {{ request()->routeIs($routeName) ? 'active' : '' }}"><a wire:navigate class="nav-link" href="{{ route($routeName) }}" @if (request()->routeIs($routeName)) aria-current="page" @endif>{{ $label }}</a></li>
                 @endforeach
                 <li class="nav-item"><a wire:navigate class="nav-link" href="{{ route('pages.index') }}">Public site</a></li>

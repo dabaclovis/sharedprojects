@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('admins')->name('admins.')->middleware(['auth:web', RequireAdmin::class])->group(function () {
     Route::get('/dashboard', Admins\Dashboard::class)->name('index');
     Route::get('/ratings', Admins\Ratings::class)->name('ratings');
+    Route::get('/rewards', Admins\Rewards::class)->name('rewards');
     Route::get('/users', Admins\Users::class)->name('users');
     Route::get('/articles', Admins\ContentManager::class)->defaults('kind', 'articles')->name('articles');
     Route::get('/products', Admins\ContentManager::class)->defaults('kind', 'products')->name('products');

@@ -159,10 +159,13 @@ class Products extends Component
 
     public function render()
     {
+        $search = mb_substr(trim($this->search), 0, 200);
+
         return view('livewire.users.products', [
             'products' => Auth::user()->affiliateProducts()
-                ->when(trim($this->search) !== '', fn ($query) => $query->where('title', 'like', '%'.trim($this->search).'%'))
-                ->when($this->filter !== '', fn ($query) => $query->where('status', $this->filter))
+                ->select(['id', 'user_id', 'title', 'description', 'merchant', 'category', 'affiliate_url', 'image_url', 'image_path', 'price', 'currency', 'status', 'updated_at'])
+                ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.$search.'%'))
+                ->when(in_array($this->filter, ['draft', 'published', 'archived'], true), fn ($query) => $query->where('status', $this->filter))
                 ->latest('updated_at')->orderByDesc('id')->paginate(10),
         ]);
     }

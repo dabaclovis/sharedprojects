@@ -68,6 +68,7 @@ class Notes extends Component
         }
 
         $quote = new Quote($data);
+        $quote->user()->associate(auth()->user());
         $quote->ipaddr = request()->ip();
         $quote->save();
         RateLimiter::hit($key, 60);

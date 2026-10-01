@@ -18,6 +18,8 @@ class PublicInformationTest extends TestCase
         foreach (['pages.about', 'pages.contact', 'pages.policy'] as $route) {
             $this->get(route($route))->assertOk()->assertSee('Privacy');
         }
+        $this->get(route('pages.policy'))
+            ->assertSee('We do not sell your personal information to third parties for any reason.');
         $this->get(route('pages.contact'))->assertSee('info@auditlab.com');
     }
 

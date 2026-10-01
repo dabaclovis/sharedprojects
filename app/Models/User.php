@@ -91,4 +91,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Event::class);
     }
+
+    public function rewards(): HasMany
+    {
+        return $this->hasMany(Reward::class);
+    }
 }

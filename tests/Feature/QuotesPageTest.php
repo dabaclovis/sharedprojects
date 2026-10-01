@@ -33,6 +33,16 @@ class QuotesPageTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_signed_in_quote_is_linked_to_its_contributor(): void
+    {
+        $user = \App\Models\User::factory()->create();
+
+        Livewire::actingAs($user)->test(Notes::class)
+            ->set('content', 'An account-linked quote.')->call('save')->assertHasNoErrors();
+
+        $this->assertTrue(Quote::sole()->user->is($user));
+    }
+
     public function test_content_is_required_and_fields_have_limits(): void
     {
         Livewire::test(Notes::class)->set('content', '   ')->call('save')

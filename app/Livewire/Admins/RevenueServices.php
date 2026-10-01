@@ -268,6 +268,10 @@ class RevenueServices extends Component
     {
         $base = ServiceOrder::where('service', $this->service);
         $order = $this->orderId ? (clone $base)->findOrFail($this->orderId) : null;
+        $totals = (clone $base)->selectRaw(
+            'currency, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as new_count, SUM(CASE WHEN payment_status = ? THEN amount_cents ELSE 0 END) as paid_total',
+            ['new', 'paid']
+        )->groupBy('currency')->get();
 
         return view('livewire.admins.revenue-services', [
             'serviceTitle' => ServiceOrder::SERVICES[$this->service],
@@ -279,8 +283,8 @@ class RevenueServices extends Component
                 ->when(in_array($this->status, ServiceOrder::STATUSES), fn ($query) => $query->where('status', $this->status))
                 ->latest('id')->paginate(10),
             'order' => $order,
-            'newCount' => (clone $base)->where('status', 'new')->count(),
-            'paidTotals' => (clone $base)->where('payment_status', 'paid')->selectRaw('currency, SUM(amount_cents) as total')->groupBy('currency')->pluck('total', 'currency'),
+            'newCount' => (int) $totals->sum('new_count'),
+            'paidTotals' => $totals->filter(fn ($total) => (int) $total->paid_total > 0)->pluck('paid_total', 'currency'),
             'reportUrl' => $order?->service === 'website-audit' && $order->status === 'completed' && $order->payment_status === 'paid'
                 ? URL::temporarySignedRoute('pages.business-report', now()->addDays(30), ['order' => $order->reference]) : null,
         ])->title(ServiceOrder::SERVICES[$this->service]);

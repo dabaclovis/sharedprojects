@@ -21,6 +21,10 @@ class PostShow extends Component
         $post = Post::published()->with('author')->where('slug', $this->slug)->firstOrFail();
 
         return view('livewire.pages.post-show', ['post' => $post])
+            ->layoutData([
+                'description' => $post->excerpt ?: 'Read '.$post->title.' and discover more community stories and practical ideas.',
+                'keywords' => collect([$post->category, 'community article', 'stories', 'ideas'])->filter()->implode(', '),
+            ])
             ->title(ucfirst($post->title));
     }
 }

@@ -42,10 +42,11 @@ class Index extends Component
     public function render()
     {
         $user = Auth::user();
+        $search = mb_substr(trim($this->search), 0, 200);
         $counts = $user->posts()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status');
         $posts = $user->posts()
-            ->when(trim($this->search) !== '', fn ($query) => $query->where('title', 'like', '%'.trim($this->search).'%'))
-            ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
+            ->when($search !== '', fn ($query) => $query->where('title', 'like', '%'.$search.'%'))
+            ->when(in_array($this->status, ['draft', 'published', 'archived'], true), fn ($query) => $query->where('status', $this->status))
             ->orderByDesc('updated_at')->orderByDesc('id')
             ->paginate(5, ['id', 'title', 'excerpt', 'category', 'status', 'published_at', 'updated_at']);
 

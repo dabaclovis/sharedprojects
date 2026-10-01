@@ -31,7 +31,9 @@ class Articles extends Component
     public function render()
     {
         $search = trim($this->search);
-        $posts = Post::published()->with('author')
+        $search = mb_substr($search, 0, 200);
+        $posts = Post::published()->with('author:id,name')
+            ->select(['id', 'author_id', 'title', 'slug', 'excerpt', 'category', 'icon', 'published_at'])
             ->when($search !== '', function ($query) use ($search) {
                 $query->where(function ($query) use ($search) {
                     $query->where('title', 'like', '%'.$search.'%')

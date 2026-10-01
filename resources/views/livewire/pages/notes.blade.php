@@ -2,7 +2,7 @@
     <header class="dashboard-welcome p-4 p-md-5 mb-4">
         <p class="small text-uppercase font-weight-bold text-muted mb-2">Words worth sharing</p>
         <h1 class="font-weight-bold">Community quotes</h1>
-        <p class="mb-0">A little inspiration, a fresh perspective. Read and share a quote — no account needed.</p>
+        <p class="mb-0">A little inspiration, a fresh perspective. Read and share a quote — no account needed. Signed-in contributors may be selected for rewards.</p>
     </header>
 
     <div class="row">
