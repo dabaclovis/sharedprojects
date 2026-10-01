@@ -6,8 +6,8 @@ use App\Http\Controllers\SiteReportController;
 use App\Livewire\Pages;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', Pages\Index::class)->name('pages.index');
 Route::prefix('pages')->name('pages.')->group(function () {
-    Route::get('/', Pages\Index::class)->name('index');
     Route::get('/articles', Pages\Articles::class)->name('articles');
     Route::get('/articles/{slug}', Pages\PostShow::class)->name('postshow');
     Route::get('/products', Pages\Products::class)->name('products');
