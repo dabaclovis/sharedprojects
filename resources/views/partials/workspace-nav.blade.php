@@ -10,14 +10,34 @@
                 class="navbar-toggler-icon"></span></button>
         <div id="workspace-navigation" class="collapse navbar-collapse" :class="{ 'show': open }">
             <ul class="navbar-nav mr-auto">
-                @foreach (($administration ? [] : ['users.index' => 'Overview',
-                'users.articles' => 'My articles', 'users.products' =>
-                'My products', 'users.withdrawals' => 'Withdrawals', 'users.calendar' => 'My calendar']) as $routeName
-                => $label)
+                @foreach (($administration ? [] : ['users.products' => 'My products',
+                'users.calendar' => 'My calendar']) as $routeName => $label)
                 <li class="nav-item {{ request()->routeIs($routeName) ? 'active' : '' }}"><a wire:navigate
                         class="nav-link" href="{{ route($routeName) }}" @if (request()->routeIs($routeName))
                         aria-current="page" @endif>{{ $label }}</a></li>
                 @endforeach
+                @unless ($administration)
+                <li class="nav-item dropdown {{ request()->routeIs('users.articles', 'users.withdrawals') ? 'active' : '' }}"
+                    x-data="{ moreOpen: false }" @click.outside="moreOpen = false"
+                    @keydown.escape.stop="moreOpen = false; $refs.moreToggle.focus()"
+                    @focusout="if (!$el.contains($event.relatedTarget)) moreOpen = false">
+                    <button type="button"
+                        class="nav-link dropdown-toggle border-0 bg-transparent workspace-dropdown-toggle"
+                        x-ref="moreToggle" @click="moreOpen = !moreOpen" :aria-expanded="moreOpen.toString()"
+                        aria-expanded="false" aria-controls="user-more-dropdown">More</button>
+                    <div id="user-more-dropdown" class="dropdown-menu workspace-dropdown-menu"
+                        :class="{ 'show': moreOpen }">
+                        <a wire:navigate class="dropdown-item workspace-dropdown-item"
+                            href="{{ route('users.articles') }}" @click="moreOpen = false; open = false"
+                            aria-current="{{ request()->routeIs('users.articles') ? 'page' : 'false' }}"><i
+                                class="fa-solid fa-newspaper" aria-hidden="true"></i>My articles</a>
+                        <a wire:navigate class="dropdown-item workspace-dropdown-item"
+                            href="{{ route('users.withdrawals') }}" @click="moreOpen = false; open = false"
+                            aria-current="{{ request()->routeIs('users.withdrawals') ? 'page' : 'false' }}"><i
+                                class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i>Withdrawals</a>
+                    </div>
+                </li>
+                @endunless
                 @if ($administration)
                 <li class="nav-item dropdown {{ request()->routeIs('admins.users', 'admins.rewards', 'admins.articles', 'admins.withdrawals') ? 'active' : '' }}"
                     x-data="{ managementOpen: false }" @click.outside="managementOpen = false"
