@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Users;
 
+use App\Models\AdminDashboardLink;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -64,6 +65,7 @@ class Index extends Component
 
         return view('livewire.users.index', [
             'user' => $user,
+            'quickLinks' => AdminDashboardLink::orderBy('id')->get(),
             'posts' => $posts,
             'postEarningsCents' => (clone $postRewardsQuery)->sum('amount_cents'),
             'postRewardCount' => (clone $postRewardsQuery)->count(),

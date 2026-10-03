@@ -99,6 +99,22 @@
             </section>
 
             <aside class="col-lg-4" aria-label="Community">
+                @if ($quickLinks->isNotEmpty())
+                <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-quick-links">
+                    <h2 id="workspace-quick-links" class="h6 font-weight-bold">Quick links</h2>
+                    @foreach ($quickLinks as $quickLink)
+                    <div class="border-bottom py-2" wire:key="user-quick-link-{{ $quickLink->id }}">
+                        <h3 class="h6 mb-1"><a href="{{ $quickLink->url }}" target="_blank"
+                                rel="noopener noreferrer">{{ $quickLink->title }} <i
+                                    class="fa-solid fa-arrow-up-right-from-square small ml-1"
+                                    aria-hidden="true"></i></a></h3>
+                        @if ($quickLink->description)
+                        <p class="small text-muted mb-0">{{ $quickLink->description }}</p>
+                        @endif
+                    </div>
+                    @endforeach
+                </section>
+                @endif
                 <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-events">
                     <h2 id="workspace-events" class="h6 font-weight-bold">Coming up</h2>
                     @forelse ($upcomingEvents as $event)

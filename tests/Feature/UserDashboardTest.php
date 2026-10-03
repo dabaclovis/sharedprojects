@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Users\Index;
+use App\Models\AdminDashboardLink;
 use App\Models\Post;
 use App\Models\Reward;
 use App\Models\User;
@@ -39,6 +40,30 @@ class UserDashboardTest extends TestCase
             ->assertSee($user->name)->assertDontSee($user->email)
             ->assertSee('Your stories')->assertSee('Logout')->assertSee(route('users.withdrawals'))
             ->assertDontSee('Public site');
+    }
+
+    public function test_admin_quick_links_are_shown_on_every_user_dashboard(): void
+    {
+        AdminDashboardLink::create([
+            'title' => 'Support center',
+            'description' => 'Get help with your account.',
+            'url' => 'https://example.test/support',
+        ]);
+        AdminDashboardLink::create([
+            'title' => 'Learning library',
+            'description' => 'Browse helpful guides.',
+            'url' => 'https://example.test/guides',
+        ]);
+
+        foreach ([User::factory()->create(), User::factory()->create()] as $user) {
+            Livewire::actingAs($user)->test(Index::class)
+                ->assertSee('Quick links')
+                ->assertSee('Support center')->assertSee('Get help with your account.')
+                ->assertSee('Learning library')->assertSee('Browse helpful guides.')
+                ->assertSee('href="https://example.test/support"', false)
+                ->assertSee('href="https://example.test/guides"', false)
+                ->assertViewHas('quickLinks', fn($links) => $links->count() === 2);
+        }
     }
 
     public function test_posts_and_statistics_are_scoped_to_the_signed_in_author(): void
