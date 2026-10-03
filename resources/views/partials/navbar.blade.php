@@ -12,13 +12,13 @@
 
         <div id="main-navigation" class="collapse navbar-collapse" :class="{ 'show': open }">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item"><a class="nav-link" wire:navigate href="{{ route('pages.business') }}">Business services</a></li>
                 @foreach (['pages.index' => 'Home'] as $routeName => $label)
                 <li class="nav-item {{ request()->routeIs($routeName) ? 'active' : '' }}">
                     <a wire:navigate class="nav-link" href="{{ route($routeName) }}" @if (request()->routeIs($routeName))
                         aria-current="page" @endif>{{ $label }}</a>
                 </li>
                 @endforeach
+                <li class="nav-item"><a class="nav-link" wire:navigate href="{{ route('pages.business') }}">Business services</a></li>
                 <li class="nav-item">
                     <a class="nav-link" wire:navigate href="{{ route('pages.products') }}">Products</a>
                 </li>
