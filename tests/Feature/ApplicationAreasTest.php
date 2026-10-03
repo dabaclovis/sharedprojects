@@ -50,6 +50,15 @@ class ApplicationAreasTest extends TestCase
             ->assertDontSee('href="' . route('pages.seo-audit') . '"', false);
         $this->get(route('users.index'))->assertOk()->assertSee('aria-label="My workspace"', false);
         $this->get(route('admins.index'))->assertOk()->assertSee('aria-label="Administration"', false);
+        $this->actingAs(User::factory()->create())->get(route('users.index'))->assertOk()
+            ->assertSee('>More</button>', false)
+            ->assertSee('href="' . route('users.articles') . '"', false)
+            ->assertSee('href="' . route('users.withdrawals') . '"', false)
+            ->assertSee('href="' . route('users.products') . '"', false)
+            ->assertSee('href="' . route('users.calendar') . '"', false)
+            ->assertDontSee('>Overview</a>', false);
+        $this->actingAs($admin)->get(route('admins.index'))->assertOk()
+            ->assertSee('>Overview</a>', false);
         $this->get('/services/calendar')->assertRedirect(route('users.calendar'));
         $this->get('/admin/profile')->assertRedirect(route('users.profile'));
         $this->get('/admin/articles')->assertRedirect(route('admins.articles'));
