@@ -74,7 +74,7 @@ class User extends Authenticatable
 
     public function suspensionMessage(): string
     {
-        return 'Your account is suspended. '.($this->suspension_reason ?: 'Please contact support for the reason for your suspension.').' Contact support at info@myapp.com.';
+        return 'Your account is suspended. ' . ($this->suspension_reason ?: 'Please contact support for the reason for your suspension.') . ' Contact support at info@myapp.com.';
     }
 
     public function posts(): HasMany
@@ -95,5 +95,10 @@ class User extends Authenticatable
     public function rewards(): HasMany
     {
         return $this->hasMany(Reward::class);
+    }
+
+    public function withdrawalRequests(): HasMany
+    {
+        return $this->hasMany(WithdrawalRequest::class);
     }
 }

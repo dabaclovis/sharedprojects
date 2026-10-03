@@ -32,6 +32,9 @@ class RatingPrompt extends Component
         }
         $this->eligible = ! session('rating.dismissed') && ! session('rating.submitted')
             && ! (auth()->check() && ApplicationRating::where('user_id', auth()->id())->exists());
+        if ($this->eligible && request()->ip()) {
+            $this->eligible = ! ApplicationRating::where('ip_address', request()->ip())->exists();
+        }
         $this->delay = max(0, (91 - (now()->timestamp - session('rating.started_at'))) * 1000);
     }
 
@@ -56,9 +59,15 @@ class RatingPrompt extends Component
         }
         $this->feedback = trim($this->feedback);
         $this->validate(['score' => ['required', 'integer', 'between:1,5'], 'feedback' => ['nullable', 'string', 'max:1000']]);
-        $key = 'application-rating:'.hash('sha256', (string) request()->ip());
+        $key = 'application-rating:' . hash('sha256', (string) request()->ip());
         if (RateLimiter::tooManyAttempts($key, 10)) {
             $this->addError('submission', 'Too many submissions. Please try again later.');
+
+            return;
+        }
+        $ipAddress = request()->ip();
+        if ($ipAddress && ApplicationRating::where('ip_address', $ipAddress)->exists()) {
+            $this->addError('submission', 'This IP address has already submitted a rating.');
 
             return;
         }
@@ -66,9 +75,14 @@ class RatingPrompt extends Component
         try {
             ApplicationRating::firstOrCreate(
                 auth()->check() ? ['user_id' => auth()->id()] : ['visitor_hash' => $visitor],
-                ['visitor_hash' => $visitor, 'score' => (int) $this->score, 'feedback' => $this->feedback ?: null, 'ip_address' => request()->ip()]
+                ['visitor_hash' => $visitor, 'score' => (int) $this->score, 'feedback' => $this->feedback ?: null, 'ip_address' => $ipAddress]
             );
         } catch (QueryException $exception) {
+            if ($ipAddress && ApplicationRating::where('ip_address', $ipAddress)->exists()) {
+                $this->addError('submission', 'This IP address has already submitted a rating.');
+
+                return;
+            }
             report($exception);
             $this->addError('submission', 'We could not save your rating. Please try again.');
 

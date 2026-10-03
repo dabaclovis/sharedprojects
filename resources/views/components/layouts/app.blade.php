@@ -3,12 +3,12 @@
 
 <head>
     @php
-        $routeName = request()->route()?->getName();
-        $routeSeo = config('seo.routes', [])[$routeName] ?? [];
-        $pageTitle = $routeSeo['title'] ?? $title ?? config('seo.defaults.title', config('app.name'));
-        $pageDescription = $routeSeo['description'] ?? $description ?? config('seo.defaults.description');
-        $pageKeywords = $routeSeo['keywords'] ?? $keywords ?? config('seo.defaults.keywords');
-        $isPrivateArea = request()->routeIs('auth.*', 'users.*', 'admins.*');
+    $routeName = request()->route()?->getName();
+    $routeSeo = config('seo.routes', [])[$routeName] ?? [];
+    $pageTitle = $routeSeo['title'] ?? $title ?? config('seo.defaults.title', config('app.name'));
+    $pageDescription = $routeSeo['description'] ?? $description ?? config('seo.defaults.description');
+    $pageKeywords = $routeSeo['keywords'] ?? $keywords ?? config('seo.defaults.keywords');
+    $isPrivateArea = request()->routeIs('auth.*', 'users.*', 'admins.*');
     @endphp
     <title>{{ $pageTitle }}</title>
     <!-- Required meta tags -->
@@ -18,7 +18,7 @@
     <meta name="keywords" content="{{ $pageKeywords }}">
     <meta name="robots" content="{{ $isPrivateArea ? 'noindex, nofollow' : 'index, follow' }}">
     @unless ($isPrivateArea)
-        <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="{{ url()->current() }}">
     @endunless
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand-mark.svg') }}">
 
@@ -36,11 +36,15 @@
 
 <body @class(['d-flex', 'flex-column' , 'min-vh-100' ])>
     @if (request()->routeIs('admins.*'))
-        @include('partials.admins.navba')
+    @include('partials.admins.navba')
     @elseif (request()->routeIs('users.*'))
-        @include('partials.users.nav')
+    @include('partials.users.nav')
+    @elseif (auth()->check() && auth()->user()->role === 'admin')
+    @include('partials.admins.navba')
+    @elseif (auth()->check())
+    @include('partials.users.nav')
     @else
-        @include('partials.navbar')
+    @include('partials.navbar')
     @endif
     <main class="flex-grow-1 container py-2">
         {{ $slot }}
@@ -48,6 +52,72 @@
     @include('partials.footer')
     <livewire:pages.rating-prompt />
     @livewireScripts
+    @auth
+    <script>
+        (() => {
+            const idleTimeout = 4 * 60 * 1000;
+            const activityKey = @json('byapps:last-activity:'.auth()->id());
+            const logoutForm = document.getElementById('account-logout-form');
+            if (!logoutForm) return;
+
+            let lastActivityAt = Date.now();
+            let lastActivitySavedAt = 0;
+            let idleTimer;
+            let logoutStarted = false;
+
+            function getSharedActivityAt() {
+                try {
+                    const sharedActivityAt = Number(localStorage.getItem(activityKey));
+                    return Number.isFinite(sharedActivityAt) ? sharedActivityAt : 0;
+                } catch {
+                    return 0;
+                }
+            }
+
+            function logoutForInactivity() {
+                if (logoutStarted) return;
+                logoutStarted = true;
+                logoutForm.requestSubmit();
+            }
+
+            function scheduleLogout() {
+                window.clearTimeout(idleTimer);
+                const mostRecentActivityAt = Math.max(lastActivityAt, getSharedActivityAt());
+                const remainingTime = idleTimeout - (Date.now() - mostRecentActivityAt);
+                if (remainingTime <= 0) {
+                    logoutForInactivity();
+                    return;
+                }
+                idleTimer = window.setTimeout(scheduleLogout, remainingTime);
+            }
+
+            function recordActivity() {
+                if (logoutStarted) return;
+                const activityAt = Date.now();
+                lastActivityAt = activityAt;
+                if (activityAt - lastActivitySavedAt >= 1000) {
+                    try {
+                        localStorage.setItem(activityKey, String(activityAt));
+                        lastActivitySavedAt = activityAt;
+                    } catch {
+                        // Keep the local timer working when storage is unavailable.
+                    }
+                }
+                scheduleLogout();
+            }
+
+            for (const activityEvent of ['pointerdown', 'keydown', 'scroll', 'touchstart', 'mousemove']) {
+                window.addEventListener(activityEvent, recordActivity, { passive: true });
+            }
+            window.addEventListener('storage', event => {
+                if (event.key === activityKey) scheduleLogout();
+            });
+            window.addEventListener('focus', scheduleLogout);
+            document.addEventListener('visibilitychange', scheduleLogout);
+            recordActivity();
+        })();
+    </script>
+    @endauth
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
         integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous">
     </script>

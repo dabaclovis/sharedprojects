@@ -23,8 +23,11 @@ class RevenueServicesTest extends TestCase
     private function order(array $attributes = []): ServiceOrder
     {
         return ServiceOrder::create(array_merge([
-            'reference' => (string) Str::uuid(), 'service' => 'website-audit', 'name' => 'Client Name',
-            'email' => 'client@example.com', 'website' => 'https://example.com/',
+            'reference' => (string) Str::uuid(),
+            'service' => 'website-audit',
+            'name' => 'Client Name',
+            'email' => 'client@example.com',
+            'website' => 'https://example.com/',
             'brief' => 'Please review our homepage and recommend improvements.',
         ], $attributes));
     }
@@ -53,7 +56,7 @@ class RevenueServicesTest extends TestCase
 
     public function test_inquiries_are_rate_limited(): void
     {
-        $key = 'business-inquiry:'.hash('sha256', '127.0.0.1');
+        $key = 'business-inquiry:' . hash('sha256', '127.0.0.1');
         RateLimiter::clear($key);
         for ($i = 0; $i < 3; $i++) {
             RateLimiter::hit($key, 3600);
@@ -194,8 +197,11 @@ class RevenueServicesTest extends TestCase
         $fake = \Mockery::mock(SafeFetcher::class)->makePartial();
         $fake->shouldReceive('fetch')->with('https://example.com/robots.txt')->once()->andReturn(['status' => 404, 'body' => '']);
         $fake->shouldReceive('fetch')->with('https://example.com/')->once()->andReturn([
-            'url' => 'https://example.com/', 'status' => 200, 'body' => '<html><head><title>Client</title></head><body><h1>Welcome</h1><img src="x"></body></html>',
-            'headers' => ['content-type' => 'text/html'], 'ms' => 50,
+            'url' => 'https://example.com/',
+            'status' => 200,
+            'body' => '<html><head><title>Client</title></head><body><h1>Welcome</h1><img src="x"></body></html>',
+            'headers' => ['content-type' => 'text/html'],
+            'ms' => 50,
         ]);
         $this->app->instance(SafeFetcher::class, $fake);
         $plan = 'First add a clear page description and useful alternative text to meaningful images. <script>alert(1)</script>';
@@ -203,16 +209,18 @@ class RevenueServicesTest extends TestCase
             ->set('deliverable', $plan)->call('completeAudit')->assertHasErrors('workflow')
             ->call('runAudit')->assertHasNoErrors()->call('saveReport')->assertHasNoErrors()
             ->set('internalNotes', 'Private pricing discussion')->call('saveNotes')
-            ->call('completeAudit')->assertHasNoErrors()->assertSee('Ready for delivery');
+            ->call('completeAudit')->assertHasNoErrors()->assertSee('Ready for delivery')
+            ->assertSee('/services/business-report/' . $order->reference . '?', false)
+            ->assertDontSee('/pages/business-report/', false);
         $this->assertSame('completed', $order->fresh()->status);
         $this->assertSame(1, $order->fresh()->audit_result['missing_alt']);
-        $url = URL::temporarySignedRoute('pages.business-report', now()->addDays(30), ['order' => $order->reference]);
+        $url = URL::temporarySignedRoute('services.business-report', now()->addDays(30), ['order' => $order->reference]);
         $this->get(route('pages.business-report', ['order' => $order->reference]))->assertForbidden();
         auth()->logout();
         $this->get($url)->assertOk()->assertSee('Your action plan')->assertSeeHtml('&lt;script&gt;')
             ->assertDontSeeHtml('<script>alert(1)</script>')->assertDontSee('Private pricing discussion')->assertDontSee('client@example.com')
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow');
-        $expired = URL::temporarySignedRoute('pages.business-report', now()->subMinute(), ['order' => $order->reference]);
+        $expired = URL::temporarySignedRoute('services.business-report', now()->subMinute(), ['order' => $order->reference]);
         $this->get($expired)->assertForbidden();
         $order->update(['payment_status' => 'refunded']);
         $this->get($url)->assertNotFound();
@@ -258,8 +266,14 @@ class RevenueServicesTest extends TestCase
     public function test_future_unpaid_and_cancelled_sponsors_are_never_public(): void
     {
         foreach ([['status' => 'cancelled'], ['payment_status' => 'unpaid'], ['starts_at' => now()->addDay()]] as $override) {
-            $this->order(array_merge(['service' => 'sponsorship', 'status' => 'in_progress', 'payment_status' => 'paid',
-                'starts_at' => now()->subDay(), 'ends_at' => now()->addDays(2), 'sponsor_title' => 'Hidden sponsor'], $override));
+            $this->order(array_merge([
+                'service' => 'sponsorship',
+                'status' => 'in_progress',
+                'payment_status' => 'paid',
+                'starts_at' => now()->subDay(),
+                'ends_at' => now()->addDays(2),
+                'sponsor_title' => 'Hidden sponsor'
+            ], $override));
         }
         $this->get('/')->assertOk()->assertDontSee('Hidden sponsor');
     }
@@ -271,7 +285,7 @@ class RevenueServicesTest extends TestCase
         $this->order(['name' => 'Refunded Client', 'amount_cents' => 99999, 'currency' => 'USD', 'payment_status' => 'refunded']);
         $this->order(['service' => 'sponsorship', 'name' => 'Sponsor Client']);
         $this->admin()->assertSee('Audit Client')->assertDontSee('Sponsor Client')
-            ->assertViewHas('paidTotals', fn ($totals) => (int) $totals['USD'] === 9900 && (int) $totals['EUR'] === 25000)
+            ->assertViewHas('paidTotals', fn($totals) => (int) $totals['USD'] === 9900 && (int) $totals['EUR'] === 25000)
             ->set('search', 'Euro Client')->assertSee('Euro Client')->assertDontSee('Audit Client')
             ->set('status', 'completed')->assertSee('No requests match these filters.');
     }

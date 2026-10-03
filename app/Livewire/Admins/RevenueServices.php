@@ -129,7 +129,7 @@ class RevenueServices extends Component
             $this->revision = $order->fresh()->revision();
         });
         $this->resetValidation();
-        session()->flash('serviceStatus', $action.'.');
+        session()->flash('serviceStatus', $action . '.');
     }
 
     private function requireState(bool $allowed, string $message): void
@@ -185,7 +185,7 @@ class RevenueServices extends Component
     public function saveNotes(): void
     {
         $this->validate(['internalNotes' => ['nullable', 'string', 'max:10000']]);
-        $this->change('Internal notes saved', fn ($order) => $order->internal_notes = trim($this->internalNotes));
+        $this->change('Internal notes saved', fn($order) => $order->internal_notes = trim($this->internalNotes));
     }
 
     public function startAudit(): void
@@ -200,7 +200,7 @@ class RevenueServices extends Component
     {
         $order = ServiceOrder::where('service', $this->service)->findOrFail($this->orderId);
         $this->requireState($order->service === 'website-audit' && $order->status === 'in_progress' && $order->payment_status === 'paid', 'Start a paid audit before generating findings.');
-        $key = 'paid-audit:'.auth()->id();
+        $key = 'paid-audit:' . auth()->id();
         if (RateLimiter::tooManyAttempts($key, 10)) {
             $this->addError('workflow', 'Please wait a few minutes before running another audit.');
 
@@ -211,7 +211,7 @@ class RevenueServices extends Component
             $fetcher = app(SafeFetcher::class);
             $url = $fetcher->normalize($order->website);
             $analyzer = app(Analyzer::class);
-            $robots = $fetcher->fetch(parse_url($url, PHP_URL_SCHEME).'://'.parse_url($url, PHP_URL_HOST).'/robots.txt');
+            $robots = $fetcher->fetch(parse_url($url, PHP_URL_SCHEME) . '://' . parse_url($url, PHP_URL_HOST) . '/robots.txt');
             if (! in_array($robots['status'], [200, 404, 410]) || ($robots['status'] === 200 && ! $analyzer->allowed($url, $robots['body']))) {
                 throw new \RuntimeException('The website cannot be checked because robots.txt blocks this page or could not be read.');
             }
@@ -286,16 +286,16 @@ class RevenueServices extends Component
             'serviceTitle' => ServiceOrder::SERVICES[$this->service],
             'orders' => (clone $base)->select(['id', 'reference', 'name', 'email', 'status', 'payment_status', 'amount_cents', 'currency', 'created_at'])
                 ->when(trim($this->search) !== '', function ($query) {
-                    $search = '%'.mb_substr(trim($this->search), 0, 200).'%';
-                    $query->where(fn ($query) => $query->where('name', 'like', $search)->orWhere('email', 'like', $search)->orWhere('reference', 'like', $search));
+                    $search = '%' . mb_substr(trim($this->search), 0, 200) . '%';
+                    $query->where(fn($query) => $query->where('name', 'like', $search)->orWhere('email', 'like', $search)->orWhere('reference', 'like', $search));
                 })
-                ->when(in_array($this->status, ServiceOrder::STATUSES), fn ($query) => $query->where('status', $this->status))
+                ->when(in_array($this->status, ServiceOrder::STATUSES), fn($query) => $query->where('status', $this->status))
                 ->latest('id')->paginate(10),
             'order' => $order,
             'newCount' => (int) $totals->sum('new_count'),
-            'paidTotals' => $totals->filter(fn ($total) => (int) $total->paid_total > 0)->pluck('paid_total', 'currency'),
+            'paidTotals' => $totals->filter(fn($total) => (int) $total->paid_total > 0)->pluck('paid_total', 'currency'),
             'reportUrl' => $order?->service === 'website-audit' && $order->status === 'completed' && $order->payment_status === 'paid'
-                ? URL::temporarySignedRoute('pages.business-report', now()->addDays(30), ['order' => $order->reference]) : null,
+                ? URL::temporarySignedRoute('services.business-report', now()->addDays(30), ['order' => $order->reference]) : null,
         ])->title(ServiceOrder::SERVICES[$this->service]);
     }
 }

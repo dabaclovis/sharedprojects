@@ -22,8 +22,8 @@ class AppServiceProvider extends ServiceProvider
     {
         \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\RequireAdmin::class]);
 
-        if (app()->environment('production')) {
-            URL::forceScheme('https');
-        }
+        // if (app()->environment('production')) {
+        //     URL::forceScheme('https');
+        // }
     }
 }

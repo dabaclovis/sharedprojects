@@ -18,8 +18,10 @@ class AdminDashboardTest extends TestCase
     public function test_admin_dashboard_shows_submitted_contact_messages(): void
     {
         ContactMessage::create([
-            'name' => 'Visitor Name', 'email' => 'visitor@example.test',
-            'subject' => 'Account question', 'message' => 'Please help me update my account information.',
+            'name' => 'Visitor Name',
+            'email' => 'visitor@example.test',
+            'subject' => 'Account question',
+            'message' => 'Please help me update my account information.',
         ]);
         $admin = User::factory()->create(['role' => 'admin']);
 
@@ -27,7 +29,32 @@ class AdminDashboardTest extends TestCase
             ->assertSee('Contact messages')->assertSee('Visitor Name')
             ->assertSee('visitor@example.test')->assertSee('Account question')
             ->assertSee('Please help me update my account information.')
-            ->assertViewHas('stats', fn ($stats) => $stats['contactMessages'] === 1 && $stats['newContactMessages'] === 1);
+            ->assertViewHas('stats', fn($stats) => $stats['contactMessages'] === 1 && $stats['newContactMessages'] === 1);
+    }
+
+    public function test_admin_can_manage_quick_links(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $component = Livewire::actingAs($admin)->test(Dashboard::class)
+            ->assertSee('Quick links')->assertSee('No quick links have been added.')
+            ->call('createQuickLink')
+            ->set('quickLinkFields.title', 'Laravel documentation')
+            ->set('quickLinkFields.description', 'Official framework guides.')
+            ->set('quickLinkFields.url', 'javascript:alert(1)')
+            ->call('saveQuickLink')->assertHasErrors('quickLinkFields.url')
+            ->set('quickLinkFields.url', 'https://laravel.com/docs')
+            ->call('saveQuickLink')->assertHasNoErrors()->assertSee('Quick link saved.')
+            ->assertSee('Laravel documentation')->assertSee('Official framework guides.');
+
+        $link = \App\Models\AdminDashboardLink::sole();
+        $this->assertSame('https://laravel.com/docs', $link->url);
+
+        $component->call('editQuickLink', $link->id)
+            ->set('quickLinkFields.title', 'Laravel API reference')
+            ->call('saveQuickLink')->assertHasNoErrors()->assertSee('Laravel API reference');
+        $component->call('deleteQuickLink', $link->id)->assertSee('Quick link removed.')
+            ->assertSee('No quick links have been added.');
+        $this->assertDatabaseMissing('admin_dashboard_links', ['id' => $link->id]);
     }
 
     public function test_admin_can_edit_a_quote_in_a_modal(): void
@@ -73,7 +100,26 @@ class AdminDashboardTest extends TestCase
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $response = $this->actingAs($admin)->get(route('admins.index'))->assertOk();
-        $response->assertSee(route('admins.articles'))->assertSee(route('users.index'))->assertSee(route('pages.index'));
+        $response->assertSee(route('admins.articles'))->assertSee(route('users.index'))->assertDontSee('Public site')
+            ->assertSee('Operations')->assertSee(route('admins.website-audits'))
+            ->assertSee('Management')->assertSee(route('admins.users'))->assertSee(route('admins.rewards'))
+            ->assertSee(route('admins.withdrawals'))
+            ->assertSee(route('admins.sponsorships'))->assertSee(route('admins.calendar'))
+            ->assertSee('x-data="{ open: false }"', false)
+            ->assertSee('open = !open', false)
+            ->assertSee('admin-operations-dropdown', false);
+        $document = new \DOMDocument;
+        $previousErrorMode = libxml_use_internal_errors(true);
+        $document->loadHTML($response->getContent());
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrorMode);
+        $navigation = (new \DOMXPath($document))->query('//nav[@aria-label="Administration"]')->item(0);
+        $xpath = new \DOMXPath($document);
+        $this->assertSame(1, $xpath->query('.//a[@href="' . route('admins.calendar') . '"]', $navigation)->length);
+        $this->assertSame(1, $xpath->query('.//a[@href="' . route('admins.products') . '"]', $navigation)->length);
+        foreach (['admins.users', 'admins.rewards', 'admins.articles', 'admins.withdrawals'] as $managementRoute) {
+            $this->assertSame(1, $xpath->query('.//a[@href="' . route($managementRoute) . '"]', $navigation)->length);
+        }
         $routes = ['admins.users', 'admins.calendar', 'admins.articles', 'admins.products', 'admins.website-audits', 'admins.sponsorships'];
         foreach ($routes as $route) {
             $this->get(route($route))->assertOk();
@@ -92,18 +138,21 @@ class AdminDashboardTest extends TestCase
         $member = User::factory()->create(['name' => 'Calendar owner']);
         for ($i = 0; $i < 9; $i++) {
             ($i === 0 ? $admin : $member)->events()->create([
-                'title' => 'Scheduled appointment '.$i,
+                'title' => 'Scheduled appointment ' . $i,
                 'starts_at' => now('UTC')->startOfDay()->subDay()->addDays($i),
                 'ends_at' => now('UTC')->startOfDay()->subDay()->addDays($i)->addHour(),
             ]);
         }
         $member->events()->create([
-            'title' => 'Cancelled appointment', 'status' => 'cancelled',
-            'starts_at' => now('UTC'), 'ends_at' => now('UTC')->addHour(),
+            'title' => 'Cancelled appointment',
+            'status' => 'cancelled',
+            'starts_at' => now('UTC'),
+            'ends_at' => now('UTC')->addHour(),
         ]);
         $member->events()->create([
             'title' => 'Deleted appointment',
-            'starts_at' => now('UTC'), 'ends_at' => now('UTC')->addHour(),
+            'starts_at' => now('UTC'),
+            'ends_at' => now('UTC')->addHour(),
         ])->delete();
 
         Livewire::actingAs($admin)->test(Dashboard::class)
@@ -111,9 +160,9 @@ class AdminDashboardTest extends TestCase
             ->assertSee('Scheduled appointment 0')->assertSee('Scheduled appointment 1')
             ->assertDontSee('Cancelled appointment')->assertDontSee('Deleted appointment')
             ->assertDontSee('View website')
-            ->assertViewHas('scheduledEvents', fn ($events) => $events->total() === 9 && $events->count() === 8)
+            ->assertViewHas('scheduledEvents', fn($events) => $events->total() === 9 && $events->count() === 8)
             ->call('nextPage', 'eventsPage')->assertSee('Scheduled appointment 8')
-            ->assertViewHas('records', fn ($records) => $records->currentPage() === 1);
+            ->assertViewHas('records', fn($records) => $records->currentPage() === 1);
     }
 
     public function test_quotes_can_be_searched_and_paginated_without_a_status_column(): void
@@ -121,19 +170,19 @@ class AdminDashboardTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         for ($i = 1; $i <= 9; $i++) {
             $quote = new Quote;
-            $quote->title = 'Quote '.$i;
+            $quote->title = 'Quote ' . $i;
             $quote->content = $i === 9 ? 'A distinctive thought' : 'Words of wisdom';
             $quote->author = $i === 9 ? 'Unique author' : null;
             $quote->save();
         }
 
         Livewire::actingAs($admin)->test(Dashboard::class)
-            ->assertViewHas('stats', fn ($stats) => $stats['quotes'] === 9 && $stats['newQuotes'] === 9)
+            ->assertViewHas('stats', fn($stats) => $stats['quotes'] === 9 && $stats['newQuotes'] === 9)
             ->set('status', 'draft')->set('section', 'quotes')->assertSet('status', '')
-            ->assertViewHas('records', fn ($records) => $records->total() === 9 && $records->count() === 8)
+            ->assertViewHas('records', fn($records) => $records->total() === 9 && $records->count() === 8)
             ->call('nextPage')->assertSet('paginators.page', 2)
             ->set('search', 'distinctive')->assertSet('paginators.page', 1)->assertSee('A distinctive thought')
-            ->assertViewHas('records', fn ($records) => $records->total() === 1)
+            ->assertViewHas('records', fn($records) => $records->total() === 1)
             ->set('search', 'Unique author')->assertSee('A distinctive thought')
             ->set('status', 'published')->assertSee('A distinctive thought')
             ->set('search', 'missing')->assertSee('No quotes match these filters.')
@@ -157,7 +206,7 @@ class AdminDashboardTest extends TestCase
 
         Livewire::actingAs($admin)->test(Dashboard::class)
             ->assertSee('Community draft')->assertDontSee('Removed draft')
-            ->assertViewHas('stats', fn ($stats) => $stats['articles'] === 1 && $stats['draftArticles'] === 1)
+            ->assertViewHas('stats', fn($stats) => $stats['articles'] === 1 && $stats['draftArticles'] === 1)
             ->set('status', 'published')->assertSee('No articles match these filters.')
             ->set('status', 'draft')->set('search', 'Community')->assertSee('Community draft')
             ->set('section', 'products')->assertSet('search', '')->assertSet('status', '')

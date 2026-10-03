@@ -50,8 +50,10 @@ class RewardsTest extends TestCase
             ->call('award', 'quote', $quote->id)->assertHasNoErrors();
 
         $this->assertDatabaseHas('rewards', [
-            'user_id' => $member->id, 'content_type' => 'quote',
-            'content_id' => $quote->id, 'amount_cents' => 2500,
+            'user_id' => $member->id,
+            'content_type' => 'quote',
+            'content_id' => $quote->id,
+            'amount_cents' => 2500,
         ]);
         $this->assertSame(2500, RewardFund::current()->balance_cents);
 
@@ -63,8 +65,10 @@ class RewardsTest extends TestCase
     {
         $member = $this->user();
         $post = new Post([
-            'title' => 'Qualified post', 'slug' => fake()->uuid(),
-            'content' => implode(' ', array_fill(0, 350, 'word')), 'category' => 'Life',
+            'title' => 'A useful qualified article for everyone',
+            'slug' => fake()->uuid(),
+            'content' => implode(' ', array_fill(0, 350, 'word')),
+            'category' => 'Life',
         ]);
         $post->author()->associate($member);
         $post->postsable()->associate($member);
@@ -73,12 +77,14 @@ class RewardsTest extends TestCase
         $admin = $this->user('admin');
         RewardFund::current()->update(['balance_cents' => 100]);
         Livewire::actingAs($admin)->test(Rewards::class)
-            ->assertSee('Qualified post')->assertSee('350 words')
+            ->assertSee('A useful qualified article for everyone')->assertSee('6 title words')->assertSee('350')
             ->call('award', 'post', $post->id)->assertHasNoErrors();
 
         $this->assertDatabaseHas('rewards', [
-            'user_id' => $member->id, 'content_type' => 'post',
-            'content_id' => $post->id, 'amount_cents' => 100,
+            'user_id' => $member->id,
+            'content_type' => 'post',
+            'content_id' => $post->id,
+            'amount_cents' => 100,
         ]);
         $this->assertSame(0, RewardFund::current()->balance_cents);
     }
@@ -88,8 +94,10 @@ class RewardsTest extends TestCase
         Quote::create(['content' => 'Anonymous quote']);
         $member = $this->user();
         $post = new Post([
-            'title' => 'Too short', 'slug' => fake()->uuid(),
-            'content' => 'Only a few words', 'category' => 'Life',
+            'title' => 'Too short',
+            'slug' => fake()->uuid(),
+            'content' => 'Only a few words',
+            'category' => 'Life',
         ]);
         $post->author()->associate($member);
         $post->postsable()->associate($member);

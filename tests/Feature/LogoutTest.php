@@ -35,4 +35,16 @@ class LogoutTest extends TestCase
         $this->actingAs(User::factory()->create())->get(route('auth.logout'))->assertStatus(405);
         $this->assertAuthenticated();
     }
+
+    public function test_authenticated_layout_logs_out_after_four_minutes_of_inactivity(): void
+    {
+        $this->actingAs(User::factory()->create())->get(route('users.index'))->assertOk()
+            ->assertSee('const idleTimeout = 4 * 60 * 1000;', false)
+            ->assertSee('id="account-logout-form"', false)
+            ->assertSee('logoutForm.requestSubmit()', false);
+
+        auth()->logout();
+        $this->get(route('pages.index'))->assertOk()
+            ->assertDontSee('const idleTimeout = 4 * 60 * 1000;', false);
+    }
 }

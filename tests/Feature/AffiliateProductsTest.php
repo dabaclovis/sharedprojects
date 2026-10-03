@@ -19,8 +19,12 @@ class AffiliateProductsTest extends TestCase
     private function product(User $user, string $status = 'published'): AffiliateProduct
     {
         return $user->affiliateProducts()->create([
-            'title' => 'Useful headphones', 'description' => 'Comfortable headphones', 'merchant' => 'Example store',
-            'affiliate_url' => 'https://example.com/item?ref=partner', 'status' => $status, 'category' => 'Audio',
+            'title' => 'Useful headphones',
+            'description' => 'Comfortable headphones',
+            'merchant' => 'Example store',
+            'affiliate_url' => 'https://example.com/item?ref=partner',
+            'status' => $status,
+            'category' => 'Audio',
         ]);
     }
 
@@ -34,12 +38,19 @@ class AffiliateProductsTest extends TestCase
                 ->set('title', 'Headphones')->set('description', 'Product description')->set('merchant', 'Store')
                 ->set('affiliate_url', 'https://example.com/item?ref=partner')->set('price', '49.99')
                 ->call('save')->assertHasNoErrors()->assertSet('showEditor', false);
+            if ($role === 'user') {
+                $component->assertDontSee('Delete');
+            } else {
+                $component->assertSee('Delete');
+            }
             $product = $user->affiliateProducts()->firstOrFail();
             $this->assertSame('draft', $product->status);
             $this->assertSame('49.99', $product->price);
             $this->get(route('products.visit', $product->id))->assertNotFound();
             $component->call('edit', $product->id)->set('status', 'published')->call('save')->assertHasNoErrors();
-            $this->get(route('pages.products'))->assertOk()->assertSee('Headphones')->assertSee('Affiliate disclosure');
+            $catalog = $this->get(route('pages.products'))->assertOk()->assertSee('Headphones')->assertSee('Affiliate disclosure');
+            $catalog->assertSee('href="' . route('products.visit', $product->id) . '"', false)
+                ->assertDontSee('href="' . route('pages.products.visit', $product->id) . '"', false);
             $this->get(route('products.visit', $product->id))->assertRedirect('https://example.com/item?ref=partner');
             $this->assertSame(1, $product->fresh()->clicks);
             $component->call('delete', $product->id);
@@ -70,10 +81,10 @@ class AffiliateProductsTest extends TestCase
         $archived->update(['title' => 'Archived item']);
         $inactive = $this->product(User::factory()->create(['status' => 'inactive']));
         Livewire::test(Products::class)->assertDontSee('Hidden draft')->assertDontSee('Archived item')
-            ->assertViewHas('products', fn ($p) => $p->total() === 10 && $p->count() === 9)
-            ->call('nextPage')->assertViewHas('products', fn ($p) => $p->count() === 1)
+            ->assertViewHas('products', fn($p) => $p->total() === 10 && $p->count() === 9)
+            ->call('nextPage')->assertViewHas('products', fn($p) => $p->count() === 1)
             ->set('search', 'missing')->assertSet('paginators.page', 1)->assertSee('No products found')
-            ->set('search', '')->set('category', 'Audio')->assertViewHas('products', fn ($p) => $p->total() === 10);
+            ->set('search', '')->set('category', 'Audio')->assertViewHas('products', fn($p) => $p->total() === 10);
         $this->get(route('products.visit', $inactive->id))->assertNotFound();
     }
 

@@ -173,21 +173,24 @@ class ContentManager extends Component
         if ($this->kind === 'events') {
             $columns = array_merge($columns, ['starts_at', 'ends_at', 'timezone']);
         }
-        $query = $this->query()->select($columns)->with($owner.':id,name,status')
-            ->when($this->status === 'trash', fn ($query) => $query->onlyTrashed())
-            ->when(in_array($this->status, $statuses, true), fn ($query) => $query->where('status', $this->status))
+        $query = $this->query()->select($columns)->with($owner . ':id,name,username,status')
+            ->when($this->status === 'trash', fn($query) => $query->onlyTrashed())
+            ->when(in_array($this->status, $statuses, true), fn($query) => $query->where('status', $this->status))
             ->when(trim($this->search) !== '', function ($query) use ($owner) {
-                $term = '%'.mb_substr(trim($this->search), 0, 200).'%';
-                $query->where(fn ($query) => $query->where('title', 'like', $term)->orWhereHas($owner, fn ($query) => $query->where('name', 'like', $term)));
+                $term = '%' . mb_substr(trim($this->search), 0, 200) . '%';
+                $query->where(fn($query) => $query->where('title', 'like', $term)
+                    ->orWhereHas($owner, fn($query) => $query->where('name', 'like', $term)->orWhere('username', 'like', $term)));
             });
-        $selected = $this->recordId ? $this->query()->withTrashed()->with($owner.':id,name,status')->find($this->recordId) : null;
+        $selected = $this->recordId ? $this->query()->withTrashed()->with($owner . ':id,name,username,status')->find($this->recordId) : null;
         if ($selected instanceof Post) {
             $selected->load('remarks.admin:id,name');
         }
 
         return view('livewire.admins.content-manager', [
             'records' => $query->latest('updated_at')->orderByDesc('id')->paginate(15),
-            'selected' => $selected, 'ownerRelation' => $owner, 'statuses' => $statuses,
-        ])->title('Manage '.ucfirst($this->kind));
+            'selected' => $selected,
+            'ownerRelation' => $owner,
+            'statuses' => $statuses,
+        ])->title('Manage ' . ucfirst($this->kind));
     }
 }

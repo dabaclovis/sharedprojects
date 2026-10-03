@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Livewire\Admins\Dashboard;
 use App\Livewire\Users\Articles;
 use App\Models\Post;
+use App\Models\Reward;
+use App\Models\RewardFund;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,6 +44,72 @@ class ArticlesTest extends TestCase
         $this->assertSame('Updated story.', $post->fresh()->excerpt);
     }
 
+    public function test_qualifying_post_is_rewarded_immediately_once_from_the_fund(): void
+    {
+        $user = User::factory()->create();
+        RewardFund::current()->update(['balance_cents' => 500, 'post_reward_cents' => 100]);
+        $title = 'My excellent educational journey begins today';
+        $content = implode(' ', array_fill(0, 350, 'learning'));
+
+        $component = Livewire::actingAs($user)->test(Articles::class)
+            ->call('create')->set('title', $title)->set('content', $content)
+            ->call('save')->assertHasNoErrors()->assertSee('Reward added: $1.00.');
+        $post = $user->posts()->sole();
+
+        $this->assertSame('draft', $post->status);
+        $this->assertDatabaseHas('rewards', [
+            'user_id' => $user->id,
+            'awarded_by' => null,
+            'content_type' => 'post',
+            'content_id' => $post->id,
+            'amount_cents' => 100,
+        ]);
+        $this->assertSame(400, RewardFund::current()->balance_cents);
+
+        $component->call('edit', $post->id)->call('save')->assertHasNoErrors();
+        $this->assertSame(1, Reward::where(['content_type' => 'post', 'content_id' => $post->id])->count());
+        $this->assertSame(400, RewardFund::current()->balance_cents);
+    }
+
+    public function test_post_needs_six_title_words_and_350_content_words_for_automatic_reward(): void
+    {
+        $user = User::factory()->create();
+        RewardFund::current()->update(['balance_cents' => 500]);
+        $component = Livewire::actingAs($user)->test(Articles::class)->call('create')
+            ->set('title', 'Only five title words')->set('content', implode(' ', array_fill(0, 350, 'word')))
+            ->call('save')->assertHasNoErrors()->assertDontSee('Reward added:');
+        $component->call('create')->set('title', 'A qualifying educational journey starts today')
+            ->set('content', implode(' ', array_fill(0, 349, 'word')))
+            ->call('save')->assertHasNoErrors()->assertDontSee('Reward added:');
+
+        $this->assertDatabaseCount('rewards', 0);
+        $this->assertSame(500, RewardFund::current()->balance_cents);
+    }
+
+    public function test_article_list_capitalizes_the_displayed_excerpt_without_changing_saved_content(): void
+    {
+        $user = User::factory()->create();
+        $post = $this->article($user);
+        $post->update(['excerpt' => 'this is my testing application']);
+
+        Livewire::actingAs($user)->test(Articles::class)
+            ->assertSee('This is my testing application')
+            ->assertDontSee('this is my testing application');
+
+        $this->assertSame('this is my testing application', $post->fresh()->excerpt);
+    }
+
+    public function test_author_can_choose_a_new_post_icon(): void
+    {
+        $user = User::factory()->create();
+        Livewire::actingAs($user)->test(Articles::class)
+            ->call('create')->assertSeeHtml('value="fa-plane"')
+            ->set('title', 'Travel story')->set('content', 'A story about travel.')
+            ->set('icon', 'fa-plane')->call('save')->assertHasNoErrors();
+
+        $this->assertSame('fa-plane', $user->posts()->sole()->icon);
+    }
+
     public function test_articles_require_admin_approval_to_publish(): void
     {
         foreach (['user', 'admin'] as $role) {
@@ -51,6 +119,11 @@ class ArticlesTest extends TestCase
                 ->call('save')->assertHasErrors(['title', 'content'])
                 ->set('title', 'Unpublished story title')->set('content', '<script>alert(1)</script>')
                 ->call('save')->assertHasNoErrors()->assertSet('showEditor', false);
+            if ($role === 'user') {
+                $component->assertDontSee('Delete');
+            } else {
+                $component->assertSee('Delete');
+            }
             $post = $user->posts()->firstOrFail();
             $this->assertSame('draft', $post->status);
             $this->assertTrue($post->postsable->is($user));
@@ -129,6 +202,24 @@ class ArticlesTest extends TestCase
         $this->assertDatabaseCount('remarks', 1);
     }
 
+    public function test_multiple_admin_recommendations_are_counted_next_to_the_article_title(): void
+    {
+        $author = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $post = $this->article($author);
+        foreach (['Add a source.', 'Clarify the conclusion.'] as $message) {
+            $remark = $post->remarks()->make(['message' => $message]);
+            $remark->admin()->associate($admin);
+            $remark->save();
+        }
+
+        Livewire::actingAs($author)->test(Articles::class)
+            ->assertSee('article-recommendations-count', false)->assertSee('>2</span>', false)
+            ->assertSee('Recommendations from admin')
+            ->assertSee('Add a source.')->assertSee('Clarify the conclusion.')
+            ->assertSee('Show 2 admin recommendations', false);
+    }
+
     public function test_admin_can_review_publish_archive_and_republish_another_users_post(): void
     {
         $post = $this->article(User::factory()->create());
@@ -148,6 +239,50 @@ class ArticlesTest extends TestCase
         $admin->update(['role' => 'user']);
         $component->call('archiveReviewedArticle')->assertForbidden();
         $this->assertSame('published', $post->fresh()->status);
+    }
+
+    public function test_admin_review_capitalizes_post_title_and_content_for_display_only(): void
+    {
+        $post = $this->article(User::factory()->create());
+        $post->update(['title' => 'my first post', 'content' => 'this is my first posting']);
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        Livewire::actingAs($admin)->test(Dashboard::class)
+            ->call('reviewArticle', $post->id)
+            ->assertSee('My first post')->assertSee('This is my first posting');
+
+        $this->assertSame('my first post', $post->fresh()->title);
+        $this->assertSame('this is my first posting', $post->fresh()->content);
+    }
+
+    public function test_admin_can_edit_a_post_and_send_recommendations_to_its_author(): void
+    {
+        $author = User::factory()->create();
+        $post = $this->article($author);
+        $post->forceFill(['status' => 'published', 'published_at' => now()->subDay()])->save();
+        $admin = User::factory()->create(['role' => 'admin']);
+        $component = Livewire::actingAs($admin)->test(Dashboard::class)
+            ->assertSee('col-12')
+            ->call('reviewArticle', $post->id)->assertSee('Recommendations for the author')
+            ->call('editReviewedArticle')
+            ->set('reviewPostFields.title', 'Revised article title')
+            ->set('reviewPostFields.content', 'Revised article body with useful details.')
+            ->set('reviewPostFields.category', 'Business')
+            ->set('reviewPostFields.icon', 'fa-plane')
+            ->call('saveReviewedArticle')->assertHasNoErrors()->assertSee('Article updated by admin.')
+            ->set('remarkMessage', 'Please add a source for the statistics.')
+            ->call('sendRemark')->assertHasNoErrors();
+
+        $this->assertSame('Revised article title', $post->fresh()->title);
+        $this->assertSame('Revised article body with useful details.', $post->fresh()->content);
+        $this->assertSame('Revised article body with useful details.', $post->fresh()->excerpt);
+        $this->assertSame('Business', $post->fresh()->category);
+        $this->assertSame('fa-plane', $post->fresh()->icon);
+        $this->assertSame('published', $post->fresh()->status);
+        $this->assertDatabaseHas('remarks', ['post_id' => $post->id, 'message' => 'Please add a source for the statistics.']);
+
+        Livewire::actingAs($author)->test(Articles::class)
+            ->assertSee('Recommendations from admin')->assertSee('Please add a source for the statistics.');
     }
 
     public function test_guests_and_inactive_accounts_are_blocked(): void

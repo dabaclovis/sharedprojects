@@ -4,6 +4,8 @@ namespace App\Livewire\Users;
 
 use App\Enums\PostCategory;
 use App\Models\Post;
+use App\Models\Reward;
+use App\Models\RewardFund;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -114,20 +116,20 @@ class Articles extends Component
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string', 'max:100000'],
             'category' => ['nullable', Rule::enum(PostCategory::class)],
-            'icon' => ['nullable', Rule::in(['fa-file-lines', 'fa-lightbulb', 'fa-comments', 'fa-seedling'])],
+            'icon' => ['nullable', Rule::in(array_keys(Post::ICONS))],
             'status' => ['required', Rule::in(['draft', 'published', 'archived'])],
         ]);
-        $saved = DB::transaction(function () use ($data) {
+        $result = DB::transaction(function () use ($data) {
             $post = $this->postId ? Auth::user()->posts()->lockForUpdate()->find($this->postId) : new Post;
             if (! $post || ($post->exists && $this->revision !== $this->fingerprint($post))) {
                 $this->addError('conflict', 'This article was changed or deleted after you opened it. Copy your edits, then reopen the article to load the latest version.');
 
-                return false;
+                return null;
             }
             $post->fill(collect($data)->except('status')->all());
             $post->excerpt = Str::limit(preg_replace('/\s+/u', ' ', trim(strip_tags($this->content))), 180);
             if (! $post->exists) {
-                $post->slug = Str::substr(Str::slug($this->title) ?: 'article', 0, 200).'-'.Str::uuid();
+                $post->slug = Str::substr(Str::slug($this->title) ?: 'article', 0, 200) . '-' . Str::uuid();
                 $post->author()->associate(Auth::user());
                 $post->postsable()->associate(Auth::user());
             }
@@ -136,14 +138,36 @@ class Articles extends Component
             $post->published_at = null;
             $post->save();
 
-            return true;
+            return ['rewardAmountCents' => $this->awardEligiblePost($post)];
         });
-        if (! $saved) {
+        if ($result === null) {
             return;
         }
         $this->cancel();
         $this->resetPage();
-        session()->flash('articleStatus', 'Article saved as a draft awaiting admin approval.');
+        session()->flash('articleStatus', $result['rewardAmountCents'] > 0
+            ? 'Article saved as a draft awaiting admin approval. Reward added: $' . number_format($result['rewardAmountCents'] / 100, 2) . '.'
+            : 'Article saved as a draft awaiting admin approval.');
+    }
+
+    private function awardEligiblePost(Post $post): int
+    {
+        if (! $post->isEligibleForReward() || Reward::where(['content_type' => 'post', 'content_id' => $post->id])->exists()) {
+            return 0;
+        }
+
+        $fund = RewardFund::query()->lockForUpdate()->find(1);
+        $amount = (int) ($fund?->post_reward_cents ?? 0);
+        if (! $fund || $amount < 1 || $fund->balance_cents < $amount) {
+            return 0;
+        }
+
+        $reward = new Reward(['content_type' => 'post', 'content_id' => $post->id, 'amount_cents' => $amount]);
+        $reward->user()->associate($post->author_id);
+        $reward->save();
+        $fund->decrement('balance_cents', $amount);
+
+        return $amount;
     }
 
     public function delete(int $id): void
@@ -179,9 +203,9 @@ class Articles extends Component
         $query = Auth::user()->posts()
             ->select(['id', 'author_id', 'title', 'excerpt', 'status', 'published_at', 'updated_at', 'deleted_at'])
             ->with('remarks.admin:id,name')
-            ->when($this->filter === 'trash', fn ($query) => $query->onlyTrashed())
-            ->when(in_array($this->filter, ['draft', 'published', 'archived'], true), fn ($query) => $query->where('status', $this->filter))
-            ->when(trim($this->search) !== '', fn ($query) => $query->where('title', 'like', '%'.mb_substr(trim($this->search), 0, 200).'%'));
+            ->when($this->filter === 'trash', fn($query) => $query->onlyTrashed())
+            ->when(in_array($this->filter, ['draft', 'published', 'archived'], true), fn($query) => $query->where('status', $this->filter))
+            ->when(trim($this->search) !== '', fn($query) => $query->where('title', 'like', '%' . mb_substr(trim($this->search), 0, 200) . '%'));
         match ($this->sort) {
             'title' => $query->orderBy('title'),
             'oldest' => $query->orderBy('updated_at'),

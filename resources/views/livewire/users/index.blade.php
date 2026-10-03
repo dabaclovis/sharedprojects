@@ -6,7 +6,10 @@
                     <p class="posts-eyebrow mb-2">Your workspace</p>
                     <h1 class="h2 font-weight-bold">Welcome back, {{ $user->name }}.</h1>
                     <p class="mb-0 text-muted">Write articles, manage your products, and plan your next event.</p>
-                    <div class="mt-3 d-flex flex-wrap" style="gap: .5rem;"><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('users.products') }}">Affiliate products</a><a wire:navigate class="btn btn-outline-primary btn-sm" href="{{ route('users.calendar') }}">My calendar</a></div>
+                    <div class="mt-3 d-flex flex-wrap" style="gap: .5rem;"><a wire:navigate
+                            class="btn btn-outline-primary btn-sm" href="{{ route('users.products') }}">Affiliate
+                            products</a><a wire:navigate class="btn btn-outline-primary btn-sm"
+                            href="{{ route('users.calendar') }}">My calendar</a></div>
                 </div>
             </div>
         </header>
@@ -26,7 +29,8 @@
                 <div class="dashboard-panel p-4">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h2 id="your-posts-heading" class="h5 font-weight-bold mb-0">Your posts</h2>
-                        <a wire:navigate href="{{ route('users.articles') }}" class="btn btn-outline-primary btn-sm">Manage articles</a>
+                        <a wire:navigate href="{{ route('users.articles') }}"
+                            class="btn btn-outline-primary btn-sm">Manage articles</a>
                         <span class="small text-muted" role="status">{{ $posts->total() }} results</span>
                     </div>
                     <div class="row mb-3">
@@ -62,8 +66,10 @@
                                     : ucfirst($post->status)) }}
                                 </span>
                             </div>
-                            @if ($post->excerpt)
-                            <p class="small text-muted mb-2">{{ ucfirst(\Illuminate\Support\Str::limit($post->excerpt, 160)) }}
+                            @if ($post->excerpt || $post->content)
+                            <p class="small text-muted mb-2">{{
+                                ucfirst(\Illuminate\Support\Str::limit(strip_tags($post->content),
+                                160)) }}
                             </p>
                             @endif
                             <p class="small text-muted mb-0">{{ $post->category ?: 'Uncategorized' }} &middot; Updated
@@ -80,8 +86,8 @@
                             <button type="button" class="btn btn-outline-primary btn-sm" wire:click="clearFilters">Clear
                                 filters</button>
                             @else
-                            <a wire:navigate href="{{ route('pages.articles') }}" class="btn btn-outline-primary btn-sm">Explore
-                                community posts</a>
+                            <a wire:navigate href="{{ route('users.articles') }}"
+                                class="btn btn-outline-primary btn-sm">Create an article</a>
                             @endif
                         </div>
                         @endforelse
@@ -96,25 +102,46 @@
                 <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-events">
                     <h2 id="workspace-events" class="h6 font-weight-bold">Coming up</h2>
                     @forelse ($upcomingEvents as $event)
-                        <div class="border-bottom py-2" wire:key="upcoming-{{ $event->id }}">
-                            <p class="mb-1 font-weight-bold">{{ $event->title }}</p>
-                            <p class="small text-muted mb-0">{{ $event->starts_at->setTimezone($event->timezone)->format('M j, Y H:i') }} {{ $event->timezone }}</p>
-                        </div>
+                    <div class="border-bottom py-2" wire:key="upcoming-{{ $event->id }}">
+                        <p class="mb-1 font-weight-bold">{{ $event->title }}</p>
+                        <p class="small text-muted mb-0">{{ $event->starts_at->setTimezone($event->timezone)->format('M
+                            j, Y H:i') }} {{ $event->timezone }}</p>
+                    </div>
                     @empty
-                        <p class="small text-muted">Your schedule is clear. Plan your next event in your calendar.</p>
+                    <p class="small text-muted">Your schedule is clear. Plan your next event in your calendar.</p>
                     @endforelse
-                    <a wire:navigate class="d-inline-block mt-3" href="{{ route('users.calendar') }}">Open my calendar &rarr;</a>
+                    <a wire:navigate class="d-inline-block mt-3" href="{{ route('users.calendar') }}">Open my calendar
+                        &rarr;</a>
                 </section>
                 <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-products">
                     <h2 id="workspace-products" class="h6 font-weight-bold">My products</h2>
-                    <p class="small text-muted">{{ $productCount }} {{ \Illuminate\Support\Str::plural('product', $productCount) }} in your workspace.</p>
+                    <p class="small text-muted">{{ $productCount }} {{ \Illuminate\Support\Str::plural('product',
+                        $productCount) }} in your workspace.</p>
                     <a wire:navigate href="{{ route('users.products') }}">Manage my products &rarr;</a>
+                </section>
+                <section class="dashboard-panel p-4 mb-4" aria-labelledby="post-earnings-heading">
+                    <h2 id="post-earnings-heading" class="h6 font-weight-bold">Post earnings</h2>
+                    <p class="h4 font-weight-bold mb-1">${{ number_format($postEarningsCents / 100, 2) }}</p>
+                    <p class="small text-muted">{{ $postRewardCount }} {{ \Illuminate\Support\Str::plural('rewarded
+                        post', $postRewardCount) }}</p>
+                    <a wire:navigate class="btn btn-outline-primary btn-sm mb-3"
+                        href="{{ route('users.withdrawals') }}">Request withdrawal</a>
+                    @forelse ($postRewards as $reward)
+                    <div class="border-top py-2" wire:key="post-reward-{{ $reward->id }}">
+                        <p class="small font-weight-bold mb-1">{{ $reward->post_title ?? 'Post no longer available' }}
+                        </p>
+                        <p class="small text-muted mb-0">${{ number_format($reward->amount_cents / 100, 2) }} · {{
+                            $reward->created_at->format('M j, Y') }}</p>
+                    </div>
+                    @empty
+                    <p class="small text-muted mb-0">No post rewards yet.</p>
+                    @endforelse
                 </section>
                 <div class="dashboard-panel p-4">
                     <h2 class="h6 font-weight-bold">Find your next idea</h2>
                     <p class="small text-muted">Discover stories and fresh perspectives from the community.</p>
-                    <a wire:navigate href="{{ route('pages.articles') }}">Browse posts <i class="fa-solid fa-arrow-right ml-1"
-                            aria-hidden="true"></i></a>
+                    <a wire:navigate href="{{ route('users.articles') }}">Manage articles <i
+                            class="fa-solid fa-arrow-right ml-1" aria-hidden="true"></i></a>
                 </div>
             </aside>
         </div>

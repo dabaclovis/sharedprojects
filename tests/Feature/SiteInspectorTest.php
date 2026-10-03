@@ -31,7 +31,7 @@ class SiteInspectorTest extends TestCase
 
     public function test_audit_is_saved_downloadable_and_private(): void
     {
-        RateLimiter::clear('site-audit:'.hash('sha256', '127.0.0.1'));
+        RateLimiter::clear('site-audit:' . hash('sha256', '127.0.0.1'));
         $fake = \Mockery::mock(SafeFetcher::class)->makePartial();
         $fake->shouldReceive('fetch')->with('https://example.com/robots.txt')->once()->andReturn($this->response('https://example.com/robots.txt', '', 404));
         $fake->shouldReceive('fetch')->with('https://example.com/sitemap.xml')->once()->andReturn($this->response('https://example.com/sitemap.xml', '<urlset><url><loc>https://example.com/</loc></url></urlset>', 200, 'application/xml'));
@@ -80,11 +80,16 @@ class SiteInspectorTest extends TestCase
     public function test_signed_in_users_can_reach_audit_tools_and_admin_crawler_uses_crawler_mode(): void
     {
         $user = User::factory()->create();
-        $this->actingAs($user)->get(route('pages.index'))->assertOk()->assertSee(route('pages.seo-audit'));
+        $this->actingAs($user)->get(route('pages.index'))->assertOk()
+            ->assertDontSee('href="' . route('pages.seo-audit') . '"', false);
         $this->actingAs(User::factory()->create(['role' => 'admin']));
-        $this->get(route('pages.index'))->assertOk()->assertSee(route('pages.seo-audit'));
-        $this->get(route('pages.seo-audit'))->assertOk()->assertSee('Start SEO audit');
-        $this->get(route('pages.web-crawler'))->assertOk()->assertSee('Maximum pages')->assertSee('Start crawl');
+        $this->get(route('pages.index'))->assertOk()
+            ->assertDontSee('href="' . route('pages.seo-audit') . '"', false);
+        $this->get(route('pages.seo-audit'))->assertOk()->assertSee('Start SEO audit')
+            ->assertDontSee('href="' . route('pages.business') . '"', false)
+            ->assertDontSee('href="' . route('pages.web-crawler') . '"', false);
+        $this->get(route('pages.web-crawler'))->assertOk()->assertSee('Maximum pages')->assertSee('Start crawl')
+            ->assertDontSee('href="' . route('pages.seo-audit') . '"', false);
     }
 
     public function test_analyzer_resolves_links_and_explains_indexing(): void
@@ -105,7 +110,7 @@ class SiteInspectorTest extends TestCase
         foreach (['http://127.0.0.1/', 'http://10.1.2.3/', 'http://169.254.169.254/', 'http://100.100.100.100/', 'http://192.0.2.1/', 'file:///etc/passwd', 'https://example.com:8080/', 'http://user:pass@example.com/'] as $url) {
             try {
                 (new SafeFetcher)->fetch($url);
-                $this->fail('Unsafe URL accepted: '.$url);
+                $this->fail('Unsafe URL accepted: ' . $url);
             } catch (\RuntimeException $e) {
                 $this->assertNotEmpty($e->getMessage());
             }
@@ -114,7 +119,7 @@ class SiteInspectorTest extends TestCase
 
     public function test_fetch_failure_is_saved_and_reported_without_crashing(): void
     {
-        RateLimiter::clear('site-audit:'.hash('sha256', '127.0.0.1'));
+        RateLimiter::clear('site-audit:' . hash('sha256', '127.0.0.1'));
         $fake = \Mockery::mock(SafeFetcher::class)->makePartial();
         $fake->shouldReceive('fetch')->once()->andThrow(new \RuntimeException('The site did not respond.'));
         $this->app->instance(SafeFetcher::class, $fake);
@@ -143,7 +148,7 @@ class SiteInspectorTest extends TestCase
 
     public function test_crawl_discovers_internal_pages_and_skips_blocked_pages(): void
     {
-        RateLimiter::clear('site-audit:'.hash('sha256', '127.0.0.1'));
+        RateLimiter::clear('site-audit:' . hash('sha256', '127.0.0.1'));
         $fake = \Mockery::mock(SafeFetcher::class)->makePartial();
         $fake->shouldReceive('fetch')->with('https://example.com/robots.txt')->once()->andReturn($this->response('https://example.com/robots.txt', "User-agent: *\nDisallow: /private"));
         $fake->shouldReceive('fetch')->with('https://example.com/sitemap.xml')->once()->andReturn($this->response('https://example.com/sitemap.xml', '', 404));

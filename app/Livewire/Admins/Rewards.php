@@ -37,7 +37,7 @@ class Rewards extends Component
             $fund->increment('balance_cents', $cents);
         });
         $this->reset('deposit');
-        session()->flash('rewardStatus', 'Reward fund increased by $'.number_format($cents / 100, 2).'.');
+        session()->flash('rewardStatus', 'Reward fund increased by $' . number_format($cents / 100, 2) . '.');
     }
 
     public function award(string $type, int $id): void
@@ -53,9 +53,7 @@ class Rewards extends Component
             abort_unless($userId, 422);
 
             if ($type === 'post') {
-                $words = str_word_count(strip_tags($content->content));
-                abort_unless($content->status === 'published' && $content->category
-                    && $words >= $fund->post_min_words && $words <= $fund->post_max_words, 422);
+                abort_unless($content->status === 'published' && $content->isEligibleForReward(), 422);
             }
 
             $amount = $type === 'quote' ? $fund->quote_reward_cents : $fund->post_reward_cents;
@@ -84,12 +82,14 @@ class Rewards extends Component
 
         $quotes = Quote::with('user:id,name')->whereNotNull('user_id')
             ->whereNotIn('id', $rewardedQuotes)->latest('id')->limit(25)->get();
-        $posts = Post::with('author:id,name')->where('status', 'published')->whereNotNull('category')
+        $posts = Post::with('author:id,name')->where('status', 'published')
             ->whereNotIn('id', $rewardedPosts)->latest('published_at')->limit(50)->get()
             ->filter(function (Post $post) use ($fund) {
                 $words = str_word_count(strip_tags($post->content));
                 $post->setAttribute('reward_word_count', $words);
-                return $words >= $fund->post_min_words && $words <= $fund->post_max_words;
+                $post->setAttribute('reward_title_word_count', str_word_count(strip_tags($post->title)));
+
+                return $post->isEligibleForReward();
             });
 
         return view('livewire.admins.rewards', [

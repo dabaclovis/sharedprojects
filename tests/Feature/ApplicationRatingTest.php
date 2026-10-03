@@ -40,6 +40,23 @@ class ApplicationRatingTest extends TestCase
         Livewire::test(RatingPrompt::class)->assertSet('eligible', false);
     }
 
+    public function test_an_ip_address_cannot_submit_a_second_rating_from_a_new_session(): void
+    {
+        $this->freezeTime();
+        $firstSession = Livewire::test(RatingPrompt::class)->set('score', 5);
+        $this->travel(91)->seconds();
+        $firstSession->call('submit')->assertHasNoErrors();
+        $this->assertDatabaseCount('application_ratings', 1);
+
+        session()->forget('rating');
+        session()->put('rating.started_at', now()->subSeconds(91)->timestamp);
+        session()->put('rating.visitor', 'second-session');
+
+        Livewire::test(RatingPrompt::class)->assertSet('eligible', false)
+            ->set('score', 3)->call('submit')->assertHasErrors('submission');
+        $this->assertDatabaseCount('application_ratings', 1);
+    }
+
     public function test_invalid_ratings_and_feedback_are_rejected(): void
     {
         $component = Livewire::test(RatingPrompt::class);

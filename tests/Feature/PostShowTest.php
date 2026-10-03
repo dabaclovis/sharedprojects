@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\PostComment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PostShowTest extends TestCase
@@ -54,5 +56,40 @@ class PostShowTest extends TestCase
         $post->delete();
         $this->get(route('pages.postshow', $post->slug))->assertNotFound();
         $this->get(route('pages.postshow', 'missing'))->assertNotFound();
+    }
+
+    public function test_active_users_can_comment_and_reply_to_a_published_post(): void
+    {
+        $post = $this->createPost();
+        $firstUser = User::factory()->create(['username' => 'reader_one']);
+        $secondUser = User::factory()->create(['username' => 'reader_two']);
+        $component = Livewire::actingAs($firstUser)->test(\App\Livewire\Pages\PostShow::class, ['slug' => $post->slug])
+            ->set('newComment', 'A useful comment.')
+            ->call('submitComment')->assertHasNoErrors()->assertSee('A useful comment.');
+        $comment = PostComment::sole();
+        $this->assertSame($firstUser->id, $comment->user_id);
+        $this->assertNull($comment->parent_id);
+
+        Livewire::actingAs($secondUser)->test(\App\Livewire\Pages\PostShow::class, ['slug' => $post->slug])
+            ->call('openReply', $comment->id)
+            ->set('replyBody', 'A thoughtful reply.')
+            ->call('submitReply')->assertHasNoErrors()->assertSee('A thoughtful reply.');
+        $reply = PostComment::whereNotNull('parent_id')->sole();
+        $this->assertSame($comment->id, $reply->parent_id);
+        $this->assertSame($secondUser->id, $reply->user_id);
+        $this->assertSame(2, $post->comments()->count());
+    }
+
+    public function test_guests_and_inactive_users_cannot_post_comments(): void
+    {
+        $post = $this->createPost();
+        $this->get(route('pages.postshow', $post->slug))->assertOk()->assertSee('Sign in to join the discussion.');
+        Livewire::test(\App\Livewire\Pages\PostShow::class, ['slug' => $post->slug])
+            ->set('newComment', 'Guest comment')->call('submitComment')->assertForbidden();
+
+        $inactiveUser = User::factory()->create(['status' => 'inactive']);
+        Livewire::actingAs($inactiveUser)->test(\App\Livewire\Pages\PostShow::class, ['slug' => $post->slug])
+            ->set('newComment', 'Inactive comment')->call('submitComment')->assertForbidden();
+        $this->assertDatabaseCount('post_comments', 0);
     }
 }
