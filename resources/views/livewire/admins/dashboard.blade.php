@@ -59,7 +59,10 @@
         <p class="small text-muted text-center mb-0">Totals exclude deleted records.</p>
     </section>
 
-    <section class="dashboard-panel p-4 mb-4" aria-labelledby="admin-quick-links-heading">
+    <section class="dashboard-panel p-4 mb-4" aria-labelledby="admin-quick-links-heading" x-data="{
+        quickLinkModalOpen: false,
+        selectedQuickLink: { id: null, title: '', description: '', url: '' }
+    }" @keydown.escape.window="quickLinkModalOpen = false">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" style="gap: .75rem;">
             <div>
                 <h2 id="admin-quick-links-heading" class="h5 mb-1">Quick links</h2>
@@ -76,9 +79,15 @@
         <article class="admin-content-row py-3 d-flex flex-wrap align-items-start justify-content-between"
             wire:key="admin-quick-link-{{ $quickLink->id }}" style="gap: .75rem;">
             <div class="flex-grow-1" style="min-width: 0;">
-                <h3 class="h6 mb-1"><a href="{{ $quickLink->url }}" target="_blank" rel="noopener noreferrer">{{
+                <h3 class="h6 mb-1"><button type="button" class="btn btn-link p-0 text-left font-weight-bold"
+                        aria-haspopup="dialog" aria-controls="quick-link-details-modal"
+                        :aria-expanded="(quickLinkModalOpen && selectedQuickLink.id === $el.dataset.id).toString()"
+                        data-id="{{ $quickLink->id }}" data-title="{{ $quickLink->title }}"
+                        data-description="{{ $quickLink->description }}"
+                        data-url="{{ $quickLink->url }}"
+                        @click="selectedQuickLink = { id: $el.dataset.id, title: $el.dataset.title, description: $el.dataset.description, url: $el.dataset.url }; quickLinkModalOpen = true">{{
                         $quickLink->title }} <i class="fa-solid fa-arrow-up-right-from-square small ml-1"
-                            aria-hidden="true"></i></a></h3>
+                            aria-hidden="true"></i></button></h3>
                 @if ($quickLink->description)<p class="small text-muted mb-0">{{ $quickLink->description }}</p>@endif
             </div>
             <div class="d-flex flex-shrink-0" style="gap: .4rem;">
@@ -92,6 +101,23 @@
         @empty
         <p class="small text-muted mb-0">No quick links have been added.</p>
         @endforelse
+        <div class="article-modal-backdrop quick-link-modal-backdrop" x-cloak x-show="quickLinkModalOpen"
+            x-transition.opacity @click.self="quickLinkModalOpen = false">
+            <section id="quick-link-details-modal" class="article-modal calendar-modal card" role="dialog"
+                aria-modal="true" aria-labelledby="quick-link-details-heading" x-trap.inert.noscroll="quickLinkModalOpen">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h2 id="quick-link-details-heading" class="h5 mb-0" x-text="selectedQuickLink.title"></h2>
+                    <button type="button" class="w3-button w3-round btn btn-sm modal-close-button"
+                        @click="quickLinkModalOpen = false" aria-label="Close quick link details"><span
+                            aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="card-body">
+                    <p class="mb-4" x-show="selectedQuickLink.description" x-text="selectedQuickLink.description"></p>
+                    <a class="btn btn-primary" :href="selectedQuickLink.url" target="_blank"
+                        rel="noopener noreferrer">Visit link</a>
+                </div>
+            </section>
+        </div>
     </section>
 
     <div class="row">

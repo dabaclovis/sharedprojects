@@ -10,7 +10,7 @@
                 class="navbar-toggler-icon"></span></button>
         <div id="workspace-navigation" class="collapse navbar-collapse" :class="{ 'show': open }">
             <ul class="navbar-nav mr-auto">
-                @foreach (($administration ? ['admins.index' => 'Overview'] : ['users.index' => 'Overview',
+                @foreach (($administration ? [] : ['users.index' => 'Overview',
                 'users.articles' => 'My articles', 'users.products' =>
                 'My products', 'users.withdrawals' => 'Withdrawals', 'users.calendar' => 'My calendar']) as $routeName
                 => $label)

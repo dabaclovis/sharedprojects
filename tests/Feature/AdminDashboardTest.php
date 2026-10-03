@@ -37,6 +37,7 @@ class AdminDashboardTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $component = Livewire::actingAs($admin)->test(Dashboard::class)
             ->assertSee('Quick links')->assertSee('No quick links have been added.')
+            ->assertSee('quick-link-details-modal')->assertSee('Visit link')
             ->call('createQuickLink')
             ->set('quickLinkFields.title', 'Laravel documentation')
             ->set('quickLinkFields.description', 'Official framework guides.')
@@ -96,6 +97,20 @@ class AdminDashboardTest extends TestCase
         $component->call('clearFilters')->assertForbidden();
     }
 
+    public function test_non_admin_cannot_invoke_dashboard_livewire_actions(): void
+    {
+        $link = \App\Models\AdminDashboardLink::create([
+            'title' => 'Protected link',
+            'url' => 'https://example.com',
+        ]);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $component = Livewire::actingAs($admin)->test(Dashboard::class);
+        $admin->update(['role' => 'user']);
+
+        $component->call('deleteQuickLink', $link->id)->assertForbidden();
+        $this->assertDatabaseHas('admin_dashboard_links', ['id' => $link->id]);
+    }
+
     public function test_dashboard_internal_links_use_protected_admin_routes(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -115,6 +130,7 @@ class AdminDashboardTest extends TestCase
         libxml_use_internal_errors($previousErrorMode);
         $navigation = (new \DOMXPath($document))->query('//nav[@aria-label="Administration"]')->item(0);
         $xpath = new \DOMXPath($document);
+        $this->assertSame(0, $xpath->query('.//ul[contains(@class, "mr-auto")]//a[@href="' . route('admins.index') . '"]', $navigation)->length);
         $this->assertSame(1, $xpath->query('.//a[@href="' . route('admins.calendar') . '"]', $navigation)->length);
         $this->assertSame(1, $xpath->query('.//a[@href="' . route('admins.products') . '"]', $navigation)->length);
         foreach (['admins.users', 'admins.rewards', 'admins.articles', 'admins.withdrawals'] as $managementRoute) {
