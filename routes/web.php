@@ -5,7 +5,7 @@ use App\Livewire\Auths;
 use App\Livewire\Pages;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', Pages\Index::class)->name('home');
+Route::get('/home', Pages\Index::class)->name('home');
 
 require __DIR__.'/pages.php';
 require __DIR__.'/users.php';
