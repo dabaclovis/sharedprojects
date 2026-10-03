@@ -64,7 +64,7 @@ class Dashboard extends Component
         $link = AdminDashboardLink::findOrFail($id);
         $this->closeQuickLinkEditor();
         $this->editingQuickLinkId = $link->id;
-        $this->quickLinkFields = $link->only(['title', 'description', 'url']);
+        $this->quickLinkFields = $link->only(['title', 'description']);
         $this->showQuickLinkEditor = true;
     }
 
@@ -85,7 +85,6 @@ class Dashboard extends Component
         $data = $this->validate([
             'quickLinkFields.title' => ['required', 'string', 'max:120'],
             'quickLinkFields.description' => ['nullable', 'string', 'max:500'],
-            'quickLinkFields.url' => ['required', 'string', 'url', 'max:2048', 'regex:/^https?:\\/\\//i'],
         ]);
 
         $link = $this->editingQuickLinkId
@@ -93,7 +92,7 @@ class Dashboard extends Component
             : new AdminDashboardLink;
         $link->fill($data['quickLinkFields'])->save();
         $this->closeQuickLinkEditor();
-        session()->flash('quickLinkStatus', 'Quick link saved.');
+        session()->flash('quickLinkStatus', 'Reminder saved.');
     }
 
     public function deleteQuickLink(int $id): void
@@ -102,7 +101,7 @@ class Dashboard extends Component
         if ($this->editingQuickLinkId === $id) {
             $this->closeQuickLinkEditor();
         }
-        session()->flash('quickLinkStatus', 'Quick link removed.');
+        session()->flash('quickLinkStatus', 'Reminder removed.');
     }
 
     public function editQuote(int $id): void

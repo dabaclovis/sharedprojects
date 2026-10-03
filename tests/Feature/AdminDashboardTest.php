@@ -32,29 +32,27 @@ class AdminDashboardTest extends TestCase
             ->assertViewHas('stats', fn($stats) => $stats['contactMessages'] === 1 && $stats['newContactMessages'] === 1);
     }
 
-    public function test_admin_can_manage_quick_links(): void
+    public function test_admin_can_manage_workspace_reminders(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $component = Livewire::actingAs($admin)->test(Dashboard::class)
-            ->assertSee('Quick links')->assertSee('No quick links have been added.')
-            ->assertSee('quick-link-details-modal')->assertSee('Visit link')
+            ->assertSee('Reminders')->assertSee('No reminders have been added.')
             ->call('createQuickLink')
             ->set('quickLinkFields.title', 'Laravel documentation')
             ->set('quickLinkFields.description', 'Official framework guides.')
-            ->set('quickLinkFields.url', 'javascript:alert(1)')
-            ->call('saveQuickLink')->assertHasErrors('quickLinkFields.url')
-            ->set('quickLinkFields.url', 'https://laravel.com/docs')
-            ->call('saveQuickLink')->assertHasNoErrors()->assertSee('Quick link saved.')
-            ->assertSee('Laravel documentation')->assertSee('Official framework guides.');
+            ->call('saveQuickLink')->assertHasNoErrors()->assertSee('Reminder saved.')
+            ->assertSee('Laravel documentation')->assertSee('Official framework guides.')
+            ->assertDontSee('href="https://laravel.com/docs"', false)
+            ->assertDontSee('Visit link');
 
         $link = \App\Models\AdminDashboardLink::sole();
-        $this->assertSame('https://laravel.com/docs', $link->url);
+        $this->assertNull($link->url);
 
         $component->call('editQuickLink', $link->id)
             ->set('quickLinkFields.title', 'Laravel API reference')
             ->call('saveQuickLink')->assertHasNoErrors()->assertSee('Laravel API reference');
-        $component->call('deleteQuickLink', $link->id)->assertSee('Quick link removed.')
-            ->assertSee('No quick links have been added.');
+        $component->call('deleteQuickLink', $link->id)->assertSee('Reminder removed.')
+            ->assertSee('No reminders have been added.');
         $this->assertDatabaseMissing('admin_dashboard_links', ['id' => $link->id]);
     }
 
@@ -101,7 +99,6 @@ class AdminDashboardTest extends TestCase
     {
         $link = \App\Models\AdminDashboardLink::create([
             'title' => 'Protected link',
-            'url' => 'https://example.com',
         ]);
         $admin = User::factory()->create(['role' => 'admin']);
         $component = Livewire::actingAs($admin)->test(Dashboard::class);

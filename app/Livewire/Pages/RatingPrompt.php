@@ -30,12 +30,19 @@ class RatingPrompt extends Component
             session()->put('rating.started_at', now()->timestamp);
             session()->put('rating.visitor', (string) Str::uuid());
         }
-        $this->eligible = ! session('rating.dismissed') && ! session('rating.submitted')
-            && ! (auth()->check() && ApplicationRating::where('user_id', auth()->id())->exists());
-        if ($this->eligible && request()->ip()) {
-            $this->eligible = ! ApplicationRating::where('ip_address', request()->ip())->exists();
-        }
         $this->delay = max(0, (91 - (now()->timestamp - session('rating.started_at'))) * 1000);
+        $this->refreshEligibility();
+    }
+
+    public function refreshEligibility(): bool
+    {
+        $ipAddress = request()->ip();
+        $this->eligible = ! session('rating.dismissed') && ! session('rating.submitted')
+            && $ipAddress !== null && $ipAddress !== ''
+            && ! ApplicationRating::where('ip_address', $ipAddress)->exists()
+            && ! (auth()->check() && ApplicationRating::where('user_id', auth()->id())->exists());
+
+        return $this->eligible;
     }
 
     public function dismiss(): void
@@ -57,6 +64,12 @@ class RatingPrompt extends Component
 
             return;
         }
+        $ipAddress = request()->ip();
+        if ($ipAddress === null || $ipAddress === '') {
+            $this->addError('submission', 'We could not verify your network address. Your rating was not submitted.');
+
+            return;
+        }
         $this->feedback = trim($this->feedback);
         $this->validate(['score' => ['required', 'integer', 'between:1,5'], 'feedback' => ['nullable', 'string', 'max:1000']]);
         $key = 'application-rating:' . hash('sha256', (string) request()->ip());
@@ -65,8 +78,7 @@ class RatingPrompt extends Component
 
             return;
         }
-        $ipAddress = request()->ip();
-        if ($ipAddress && ApplicationRating::where('ip_address', $ipAddress)->exists()) {
+        if (ApplicationRating::where('ip_address', $ipAddress)->exists()) {
             $this->addError('submission', 'This IP address has already submitted a rating.');
 
             return;
@@ -78,7 +90,7 @@ class RatingPrompt extends Component
                 ['visitor_hash' => $visitor, 'score' => (int) $this->score, 'feedback' => $this->feedback ?: null, 'ip_address' => $ipAddress]
             );
         } catch (QueryException $exception) {
-            if ($ipAddress && ApplicationRating::where('ip_address', $ipAddress)->exists()) {
+            if (ApplicationRating::where('ip_address', $ipAddress)->exists()) {
                 $this->addError('submission', 'This IP address has already submitted a rating.');
 
                 return;

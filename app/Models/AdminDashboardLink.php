@@ -6,5 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class AdminDashboardLink extends Model
 {
-    protected $fillable = ['title', 'description', 'url'];
+    protected $fillable = ['title', 'description'];
 }

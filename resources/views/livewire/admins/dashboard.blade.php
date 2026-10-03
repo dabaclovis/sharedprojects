@@ -59,17 +59,14 @@
         <p class="small text-muted text-center mb-0">Totals exclude deleted records.</p>
     </section>
 
-    <section class="dashboard-panel p-4 mb-4" aria-labelledby="admin-quick-links-heading" x-data="{
-        quickLinkModalOpen: false,
-        selectedQuickLink: { id: null, title: '', description: '', url: '' }
-    }" @keydown.escape.window="quickLinkModalOpen = false">
+    <section class="dashboard-panel p-4 mb-4" aria-labelledby="admin-quick-links-heading">
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" style="gap: .75rem;">
             <div>
-                <h2 id="admin-quick-links-heading" class="h5 mb-1">Quick links</h2>
-                <p class="small text-muted mb-0">Curated links for your admin workspace.</p>
+                <h2 id="admin-quick-links-heading" class="h5 mb-1">Reminders</h2>
+                <p class="small text-muted mb-0">Messages for your workspace.</p>
             </div>
             <button type="button" class="btn btn-outline-primary btn-sm" wire:click="createQuickLink">
-                <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Add link
+                <i class="fa-solid fa-plus mr-1" aria-hidden="true"></i>Add reminder
             </button>
         </div>
         @if (session('quickLinkStatus'))
@@ -79,15 +76,7 @@
         <article class="admin-content-row py-3 d-flex flex-wrap align-items-start justify-content-between"
             wire:key="admin-quick-link-{{ $quickLink->id }}" style="gap: .75rem;">
             <div class="flex-grow-1" style="min-width: 0;">
-                <h3 class="h6 mb-1"><button type="button" class="btn btn-link p-0 text-left font-weight-bold"
-                        aria-haspopup="dialog" aria-controls="quick-link-details-modal"
-                        :aria-expanded="(quickLinkModalOpen && selectedQuickLink.id === $el.dataset.id).toString()"
-                        data-id="{{ $quickLink->id }}" data-title="{{ $quickLink->title }}"
-                        data-description="{{ $quickLink->description }}"
-                        data-url="{{ $quickLink->url }}"
-                        @click="selectedQuickLink = { id: $el.dataset.id, title: $el.dataset.title, description: $el.dataset.description, url: $el.dataset.url }; quickLinkModalOpen = true">{{
-                        $quickLink->title }} <i class="fa-solid fa-arrow-up-right-from-square small ml-1"
-                            aria-hidden="true"></i></button></h3>
+                <h3 class="h6 mb-1">{{ $quickLink->title }}</h3>
                 @if ($quickLink->description)<p class="small text-muted mb-0">{{ $quickLink->description }}</p>@endif
             </div>
             <div class="d-flex flex-shrink-0" style="gap: .4rem;">
@@ -95,29 +84,12 @@
                     wire:click="editQuickLink({{ $quickLink->id }})">Edit</button>
                 <button type="button" class="btn btn-outline-danger btn-sm"
                     wire:click="deleteQuickLink({{ $quickLink->id }})"
-                    wire:confirm="Remove this quick link?">Remove</button>
+                    wire:confirm="Remove this reminder?">Remove</button>
             </div>
         </article>
         @empty
-        <p class="small text-muted mb-0">No quick links have been added.</p>
+        <p class="small text-muted mb-0">No reminders have been added.</p>
         @endforelse
-        <div class="article-modal-backdrop quick-link-modal-backdrop" x-cloak x-show="quickLinkModalOpen"
-            x-transition.opacity @click.self="quickLinkModalOpen = false">
-            <section id="quick-link-details-modal" class="article-modal calendar-modal card" role="dialog"
-                aria-modal="true" aria-labelledby="quick-link-details-heading" x-trap.inert.noscroll="quickLinkModalOpen">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h2 id="quick-link-details-heading" class="h5 mb-0" x-text="selectedQuickLink.title"></h2>
-                    <button type="button" class="w3-button w3-round btn btn-sm modal-close-button"
-                        @click="quickLinkModalOpen = false" aria-label="Close quick link details"><span
-                            aria-hidden="true">&times;</span></button>
-                </div>
-                <div class="card-body">
-                    <p class="mb-4" x-show="selectedQuickLink.description" x-text="selectedQuickLink.description"></p>
-                    <a class="btn btn-primary" :href="selectedQuickLink.url" target="_blank"
-                        rel="noopener noreferrer">Visit link</a>
-                </div>
-            </section>
-        </div>
     </section>
 
     <div class="row">
@@ -312,8 +284,8 @@
         <section class="article-modal card" role="dialog" aria-modal="true" aria-labelledby="quick-link-editor-heading"
             x-trap.inert.noscroll="true">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h2 id="quick-link-editor-heading" class="h5 mb-0">{{ $editingQuickLinkId ? 'Edit quick link' : 'Add
-                    quick link' }}</h2>
+                <h2 id="quick-link-editor-heading" class="h5 mb-0">{{ $editingQuickLinkId ? 'Edit reminder' : 'Add
+                    reminder' }}</h2>
                 <button type="button" class="w3-button w3-round btn btn-sm modal-close-button"
                     wire:click="closeQuickLinkEditor" aria-label="Close editor"><span
                         aria-hidden="true">&times;</span></button>
@@ -328,14 +300,10 @@
                     maxlength="500" rows="3"></textarea>
                 @error('quickLinkFields.description')<p class="text-danger small" role="alert">{{ $message }}</p>
                 @enderror
-                <label for="quick-link-url">Destination URL</label>
-                <input id="quick-link-url" class="form-control mb-2" type="url" inputmode="url"
-                    wire:model="quickLinkFields.url" maxlength="2048" placeholder="https://example.com" required>
-                @error('quickLinkFields.url')<p class="text-danger small" role="alert">{{ $message }}</p>@enderror
                 <div class="d-flex justify-content-end mt-3" style="gap: .5rem;">
                     <button type="button" class="btn btn-light" wire:click="closeQuickLinkEditor">Cancel</button>
                     <button type="submit" class="btn btn-primary" wire:loading.attr="disabled"
-                        wire:target="saveQuickLink">Save link</button>
+                        wire:target="saveQuickLink">Save reminder</button>
                 </div>
             </form>
         </section>

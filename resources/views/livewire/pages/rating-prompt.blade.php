@@ -2,7 +2,13 @@
     open: false, timer: null,
     init() {
         if (@js($eligible)) {
-            this.timer = setTimeout(() => { this.open = true; this.$nextTick(() => this.$refs.close.focus()); }, @js($delay));
+            this.timer = setTimeout(() => {
+                $wire.refreshEligibility().then(eligible => {
+                    if (!eligible) return;
+                    this.open = true;
+                    this.$nextTick(() => this.$refs.close.focus());
+                });
+            }, @js($delay));
         }
     },
     dismiss() { this.open = false; $wire.dismiss(); },

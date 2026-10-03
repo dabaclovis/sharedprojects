@@ -100,14 +100,11 @@
 
             <aside class="col-lg-4" aria-label="Community">
                 @if ($quickLinks->isNotEmpty())
-                <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-quick-links">
-                    <h2 id="workspace-quick-links" class="h6 font-weight-bold">Quick links</h2>
+                <section class="dashboard-panel p-4 mb-4" aria-labelledby="workspace-reminders">
+                    <h2 id="workspace-reminders" class="h6 font-weight-bold">Reminders</h2>
                     @foreach ($quickLinks as $quickLink)
-                    <div class="border-bottom py-2" wire:key="user-quick-link-{{ $quickLink->id }}">
-                        <h3 class="h6 mb-1"><a href="{{ $quickLink->url }}" target="_blank"
-                                rel="noopener noreferrer">{{ $quickLink->title }} <i
-                                    class="fa-solid fa-arrow-up-right-from-square small ml-1"
-                                    aria-hidden="true"></i></a></h3>
+                    <div class="border-bottom py-2" wire:key="user-reminder-{{ $quickLink->id }}">
+                        <h3 class="h6 mb-1">{{ $quickLink->title }}</h3>
                         @if ($quickLink->description)
                         <p class="small text-muted mb-0">{{ $quickLink->description }}</p>
                         @endif

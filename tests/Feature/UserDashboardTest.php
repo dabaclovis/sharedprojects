@@ -42,26 +42,26 @@ class UserDashboardTest extends TestCase
             ->assertDontSee('Public site');
     }
 
-    public function test_admin_quick_links_are_shown_on_every_user_dashboard(): void
+    public function test_admin_reminders_are_shown_on_every_user_dashboard_without_links(): void
     {
         AdminDashboardLink::create([
             'title' => 'Support center',
             'description' => 'Get help with your account.',
-            'url' => 'https://example.test/support',
-        ]);
+        ])->forceFill(['url' => 'https://example.test/support'])->save();
         AdminDashboardLink::create([
             'title' => 'Learning library',
             'description' => 'Browse helpful guides.',
-            'url' => 'https://example.test/guides',
-        ]);
+        ])->forceFill(['url' => 'https://example.test/guides'])->save();
 
         foreach ([User::factory()->create(), User::factory()->create()] as $user) {
             Livewire::actingAs($user)->test(Index::class)
-                ->assertSee('Quick links')
+                ->assertSee('Reminders')
                 ->assertSee('Support center')->assertSee('Get help with your account.')
                 ->assertSee('Learning library')->assertSee('Browse helpful guides.')
-                ->assertSee('href="https://example.test/support"', false)
-                ->assertSee('href="https://example.test/guides"', false)
+                ->assertDontSee('href="https://example.test/support"', false)
+                ->assertDontSee('href="https://example.test/guides"', false)
+                ->assertDontSee('https://example.test/support')
+                ->assertDontSee('https://example.test/guides')
                 ->assertViewHas('quickLinks', fn($links) => $links->count() === 2);
         }
     }

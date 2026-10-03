@@ -6,6 +6,7 @@ use App\Livewire\Pages\RatingPrompt;
 use App\Models\ApplicationRating;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -55,6 +56,32 @@ class ApplicationRatingTest extends TestCase
         Livewire::test(RatingPrompt::class)->assertSet('eligible', false)
             ->set('score', 3)->call('submit')->assertHasErrors('submission');
         $this->assertDatabaseCount('application_ratings', 1);
+    }
+
+    public function test_rating_prompt_rechecks_ip_eligibility_before_opening(): void
+    {
+        $component = Livewire::test(RatingPrompt::class)->assertSet('eligible', true);
+        ApplicationRating::create([
+            'visitor_hash' => hash('sha256', 'another-session'),
+            'score' => 5,
+            'ip_address' => request()->ip(),
+        ]);
+
+        $component->call('refreshEligibility')->assertSet('eligible', false);
+        $this->assertDatabaseCount('application_ratings', 1);
+    }
+
+    public function test_rating_is_not_eligible_when_the_request_has_no_ip_address(): void
+    {
+        $request = Request::create('/', 'GET', [], [], [], ['REMOTE_ADDR' => '']);
+        $this->app->instance('request', $request);
+
+        $prompt = new RatingPrompt;
+        $prompt->mount();
+
+        $this->assertSame('', $request->ip());
+        $this->assertFalse($prompt->eligible);
+        $this->assertDatabaseCount('application_ratings', 0);
     }
 
     public function test_invalid_ratings_and_feedback_are_rejected(): void
