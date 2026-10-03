@@ -22,6 +22,28 @@ class MoreResourcesTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_business_services_is_inside_the_resources_dropdown(): void
+    {
+        $response = $this->get(route('pages.business'))->assertOk();
+        $document = new \DOMDocument;
+        $previousErrorMode = libxml_use_internal_errors(true);
+        $document->loadHTML($response->getContent());
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrorMode);
+
+        $links = (new \DOMXPath($document))->query(
+            '//nav[@aria-label="Main navigation"]//a[@href="' . route('pages.business') . '"]'
+        );
+
+        $this->assertNotFalse($links);
+        $this->assertSame(1, $links->length);
+        $link = $links->item(0);
+        $this->assertNotNull($link);
+        $this->assertStringContainsString('dropdown-item', $link->getAttribute('class'));
+        $this->assertSame('resources-dropdown', $link->parentNode?->getAttribute('id'));
+        $this->assertStringContainsString('active', $link->getAttribute('class'));
+    }
+
     public function test_percentages_and_zero_denominators(): void
     {
         Livewire::test(PercentageCalculator::class)->set('first', '20')->set('second', '150')
