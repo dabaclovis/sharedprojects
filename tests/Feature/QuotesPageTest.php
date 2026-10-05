@@ -59,6 +59,9 @@ class QuotesPageTest extends TestCase
         }
         Quote::create(['content' => '<script>alert(1)</script>', 'author' => 'Distinct author']);
 
+        $this->get(route('pages.quotes'))->assertOk()
+            ->assertSeeHtml('href="'.route('pages.quotes').'?page=2"');
+
         Livewire::test(Notes::class)
             ->assertSeeHtml('&lt;script&gt;alert(1)&lt;/script&gt;')
             ->assertDontSeeHtml('<script>alert(1)</script>')
