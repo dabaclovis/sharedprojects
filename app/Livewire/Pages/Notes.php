@@ -99,7 +99,7 @@ class Notes extends Component
                     ->orWhere('title', 'like', '%' . $search . '%')
                     ->orWhere('author', 'like', '%' . $search . '%')
                     ->orWhere('tags', 'like', '%' . $search . '%')))
-                ->latest('id')->paginate(3),
+                ->latest('id')->paginate(3)->withPath(route('pages.quotes')),
         ]);
     }
 }
