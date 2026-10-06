@@ -151,7 +151,7 @@
         @keydown.escape.window="$wire.cancel()">
         <section class="article-modal card w3-white" role="dialog" aria-modal="true" aria-labelledby="editor-heading"
             x-trap.inert.noscroll="true">
-            <div class="card-header w3-container d-flex justify-content-between align-items-center">
+            <div class="card-header w3-padding-16 d-flex justify-content-between align-items-center article-editor-header">
                 <h2 id="editor-heading" class="h5 mb-0">{{ $postId ? 'Edit article' : 'New article' }}</h2>
                 <button type="button" class="w3-button w3-round btn btn-sm modal-close-button" aria-label="Close editor"
                     wire:click="cancel"><span aria-hidden="true">&times;</span></button>
@@ -159,18 +159,22 @@
             <form wire:submit="save" class="card-body w3-container" novalidate>
                 @error('conflict') <p class="w3-panel w3-pale-yellow w3-leftbar w3-border-yellow" role="alert">{{
                     $message }}</p> @enderror
+                <div class="article-editor-grid">
+                <div class="article-editor-writing">
                 <label for="article-title">Title</label>
                 <input id="article-title" x-ref="title" class="w3-input w3-border w3-round w3-margin-bottom"
-                    wire:model="title" maxlength="255" required>
+                    wire:model="title" maxlength="255" placeholder="Enter your article title" required>
                 @error('title') <p class="w3-text-red w3-small" role="alert">{{ $message }}</p> @enderror
                 <label for="article-content">Article text</label>
                 <textarea id="article-content" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="content"
-                    rows="10" maxlength="100000" required></textarea>
+                    rows="10" maxlength="100000" placeholder="Write your article here..." required></textarea>
                 @error('content') <p class="w3-text-red w3-small" role="alert">{{ $message }}</p> @enderror
+                </div>
+                <div class="article-editor-details">
                 <label for="article-category">Category (optional)</label>
                 <select id="article-category" class="w3-select w3-border w3-round w3-margin-bottom"
                     wire:model="category">
-                    <option value="">No category</option>
+                    <option value="">Select a category (optional)</option>
                     @if ($category !== '' && !\App\Enums\PostCategory::tryFrom($category))
                     <option value="{{ $category }}" disabled>{{ $category }} (choose a new category)</option>
                     @endif
@@ -179,20 +183,20 @@
                     @endforeach
                 </select>
                 @error('category') <p class="w3-text-red w3-small" role="alert">{{ $message }}</p> @enderror
-                <div class="row">
-                    <div class="w3-col s12 m6 w3-padding-small"><label for="article-icon">Icon</label><select
+                    <div><label for="article-icon">Icon (optional)</label><select
                             id="article-icon" class="w3-select w3-border w3-round w3-margin-bottom" wire:model="icon">
-                            <option value="">No icon</option>
+                            <option value="">Select an icon (optional)</option>
                             @foreach (\App\Models\Post::ICONS as $value => $label)
                             <option value="{{ $value }}">{{ $label }}</option>
                             @endforeach
                         </select>@error('icon') <p class="w3-text-red w3-small" role="alert">{{ $message }}</p>
                         @enderror
                     </div>
-                    <div class="w3-col s12 m6 w3-padding-small">
+                    <div>
                         <p class="w3-small w3-text-grey">Saving creates a draft for admin approval, including changes to
                             published articles.</p>
                     </div>
+                </div>
                 </div>
                 <div class="w3-right-align w3-margin-top">
                     <button type="button" class="w3-button w3-border w3-round w3-margin-right"
