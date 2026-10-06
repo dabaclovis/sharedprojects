@@ -24,8 +24,8 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Administration Dashboard | CD',
-        'description' => 'Monitor users, content, products, events, quotes and messages across the CD platform.',
+        'title' => 'Administration Dashboard | Brotherfall',
+        'description' => 'Monitor users, content, products, events, quotes and messages across the Brotherfall platform.',
         'keywords' => 'admin dashboard, content administration, platform management',
     ]
 )]

@@ -11,7 +11,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Your Content Dashboard | CD',
+        'title' => 'Your Content Dashboard | Brotherfall',
         'description' => 'Review your content activity, publication status, products and upcoming events.',
         'keywords' => 'user dashboard, content dashboard, account overview',
     ]

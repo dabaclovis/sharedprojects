@@ -10,7 +10,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Application Ratings and Feedback | CD Admin',
+        'title' => 'Application Ratings and Feedback | Brotherfall Admin',
         'description' => 'Review private application ratings and user feedback for service improvement.',
         'keywords' => 'application ratings, user feedback, admin reviews',
     ]

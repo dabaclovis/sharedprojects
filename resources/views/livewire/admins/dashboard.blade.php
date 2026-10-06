@@ -12,7 +12,7 @@
     @endif
     <header class="admin-welcome p-4 p-md-5 mb-4 d-flex flex-wrap align-items-center justify-content-between">
         <div>
-            <p class="small text-uppercase font-weight-bold mb-2">CD administration</p>
+            <p class="small text-uppercase font-weight-bold mb-2">Brotherfall administration</p>
             <h1 class="h2 font-weight-bold">Admin dashboard</h1>
             <p class="mb-0">Welcome, {{ ucfirst(auth()->user()->name) }}. Your community and content at a glance.</p>
         </div>

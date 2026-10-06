@@ -2,8 +2,8 @@
     <section class="jumbotron jumbotron-fluid text-center posts-hero mb-0" aria-labelledby="posts-heading">
         <div class="container py-4 py-md-5">
             <p class="posts-eyebrow mb-3">A space for curious minds</p>
-            <h1 id="posts-heading" class="display-4 font-weight-bold">Good stories. Fresh perspectives.</h1>
-            <p class="lead mx-auto mt-3 mb-4 posts-intro">Explore ideas, discover something new, and catch up on the latest from our community.</p>
+            <h1 id="posts-heading" class="display-4 font-weight-bold">{{ $category ? $category.' Articles and Guides' : 'Good stories. Fresh perspectives.' }}</h1>
+            <p class="lead mx-auto mt-3 mb-4 posts-intro">{{ $category ? 'Explore practical '.strtolower($category).' guides, tutorials and ideas from the Brotherfall community.' : 'Explore ideas, discover something new, and catch up on the latest from our community.' }}</p>
 
             <div class="mx-auto posts-search">
                 <label for="post-search" class="sr-only">Search posts by title, topic, or author</label>
@@ -18,6 +18,12 @@
         </div>
     </section>
 
+    <nav class="container pt-4" aria-label="Article categories">
+        <a class="mr-3" href="{{ route('pages.articles') }}">All articles</a>
+        @foreach (\App\Enums\PostCategory::cases() as $item)
+        <a class="mr-3 d-inline-block" href="{{ route('pages.article-category', strtolower($item->value)) }}">{{ $item->label() }}</a>
+        @endforeach
+    </nav>
     <section id="posts-list" class="container py-5" aria-label="Posts">
         <div class="d-flex flex-wrap justify-content-end align-items-center mb-4">
             <p class="text-muted small mt-3 mb-0" role="status" aria-live="polite">{{ $posts->total() }} {{ $posts->total() === 1 ? 'post' : 'posts' }}{{ trim($search) !== '' ? ' found' : ' to explore' }}</p>

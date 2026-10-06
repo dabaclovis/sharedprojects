@@ -10,4 +10,6 @@ Old `/admin/*` and `/services/*` bookmarks redirect to their new destinations. P
 
 Restoring articles and products returns them to draft. Restoring events leaves them cancelled. Administrative restoration never automatically republishes content or schedules an event.
 
+Manage Articles lists only the first two words of each title and its status. Select a title to open the full review and moderation dialog. Saved titles and search remain unchanged; product and event lists retain their existing columns.
+
 After deployment, clear stale route and compiled-view caches (`php artisan route:clear` and `php artisan view:clear`) and rebuild them using the normal deployment process. This organization change requires no additional database migration.

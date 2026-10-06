@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Account and Security Settings | CD',
+        'title' => 'Account and Security Settings | Brotherfall',
         'description' => 'Update your account details, email address and password securely.',
         'keywords' => 'account settings, security settings, change password',
     ]

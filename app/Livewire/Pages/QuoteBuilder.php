@@ -10,7 +10,7 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Free Freelance Quote and Estimate Builder | CD',
+        'title' => 'Free Freelance Quote and Estimate Builder | Brotherfall',
         'description' => 'Create a clear freelance project estimate with tasks, hours, rates, expenses, contingency and deposit calculations.',
         'keywords' => 'freelance quote builder, project estimate calculator, pricing calculator, client quote',
     ]

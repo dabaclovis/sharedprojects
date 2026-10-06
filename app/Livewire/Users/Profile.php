@@ -9,9 +9,9 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Your CD Profile',
-        'description' => 'Review your CD account identity and profile information.',
-        'keywords' => 'user profile, CD account, profile details',
+        'title' => 'Your Brotherfall Profile',
+        'description' => 'Review your Brotherfall account identity and profile information.',
+        'keywords' => 'user profile, Brotherfall account, profile details',
     ]
 )]
 class Profile extends Component

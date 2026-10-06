@@ -8,8 +8,8 @@ use Livewire\Attributes\Layout;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Privacy, Content and Affiliate Policy | CD',
-        'description' => 'Review CD policies covering privacy, submitted content, affiliate links, acceptable use and platform responsibilities.',
+        'title' => 'Privacy, Content and Affiliate Policy | Brotherfall',
+        'description' => 'Review Brotherfall policies covering privacy, submitted content, affiliate links, acceptable use and platform responsibilities.',
         'keywords' => 'privacy policy, content policy, affiliate disclosure, acceptable use',
     ]
 )]

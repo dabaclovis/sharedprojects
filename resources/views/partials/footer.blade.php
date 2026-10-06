@@ -8,7 +8,7 @@
                 </a>
                 <p class="small app-footer-description mb-3">Stories, ideas, and fresh perspectives from our community.
                 </p>
-                <p class="small mb-0">&copy; {{ date('Y') }} {{ config('app.name', 'My App') }}. All rights reserved.
+                <p class="small mb-0">&copy; {{ date('Y') }} {{ config('seo.brand') }}. All rights reserved.
                 </p>
             </div>
 

@@ -3,7 +3,6 @@
 namespace App\Livewire\Pages;
 
 use App\Models\Post;
-use App\Models\PostComment;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,6 +25,7 @@ class PostShow extends Component
     public function mount(string $slug): void
     {
         $this->slug = $slug;
+
     }
 
     public function submitComment(): void
@@ -89,11 +89,12 @@ class PostShow extends Component
             ->with(['user:id,name,username', 'replies.user:id,name,username'])
             ->latest('id')->paginate(10, ['*'], 'commentsPage');
 
-        return view('livewire.pages.post-show', ['post' => $post, 'comments' => $comments])
+        return view('livewire.pages.post-show', ['post' => $post, 'comments' => $comments, 'relatedPosts' => Post::published()->where('id', '!=', $post->id)->whereRaw('LOWER(category) = ?', [strtolower($post->category ?? '')])->latest('published_at')->limit(3)->get()])
             ->layoutData([
-                'description' => $post->excerpt ?: 'Read ' . $post->title . ' and discover more community stories and practical ideas.',
+                'canonical' => route('pages.postshow', $post->slug),
+                'description' => $post->meta_description ?: $post->excerpt ?: 'Read '.$post->title.' and discover more community stories and practical ideas.',
                 'keywords' => collect([$post->category, 'community article', 'stories', 'ideas'])->filter()->implode(', '),
             ])
-            ->title(ucfirst($post->title));
+            ->title($post->seo_title ?: ucfirst($post->title));
     }
 }

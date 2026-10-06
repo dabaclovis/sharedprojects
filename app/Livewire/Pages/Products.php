@@ -10,7 +10,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Recommended Products and Useful Finds | CD',
+        'title' => 'Recommended Products and Useful Finds | Brotherfall',
         'description' => 'Explore useful product recommendations with clear details, pricing information and transparent affiliate disclosures.',
         'keywords' => 'product recommendations, useful products, affiliate products, product discoveries',
     ]

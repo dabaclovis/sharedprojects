@@ -15,7 +15,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Withdraw Post Earnings | CD',
+        'title' => 'Withdraw Post Earnings | Brotherfall',
         'description' => 'Request withdrawal of your earned post rewards.',
         'keywords' => 'withdraw earnings, post rewards, payout request',
     ]

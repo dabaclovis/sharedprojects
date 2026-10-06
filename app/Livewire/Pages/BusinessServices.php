@@ -16,8 +16,8 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Website Audits and Sponsorship Services | CD',
-        'description' => 'Request a professional website audit or explore transparent sponsorship opportunities for reaching the CD community.',
+        'title' => 'Website Audits and Sponsorship Services | Brotherfall',
+        'description' => 'Request a professional website audit or explore transparent sponsorship opportunities for reaching the Brotherfall community.',
         'keywords' => 'website audit services, SEO review, sponsorship opportunities, website consulting',
     ]
 )]

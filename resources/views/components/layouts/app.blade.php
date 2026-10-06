@@ -18,7 +18,7 @@
     <meta name="keywords" content="{{ $pageKeywords }}">
     <meta name="robots" content="{{ $isPrivateArea ? 'noindex, nofollow' : 'index, follow' }}">
     @unless ($isPrivateArea)
-    <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="canonical" href="{{ $canonical ?? (request()->integer('page') > 1 ? url()->current().'?page='.request()->integer('page') : url()->current()) }}">
     @endunless
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand-mark.svg') }}">
 

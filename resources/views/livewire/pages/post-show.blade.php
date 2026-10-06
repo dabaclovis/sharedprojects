@@ -1,4 +1,17 @@
 <div class="posts-page py-5">
+    @php
+    $articleSchema = array_filter([
+        '@context' => 'https://schema.org', '@type' => 'Article',
+        'headline' => $post->title,
+        'description' => $post->meta_description ?: $post->excerpt,
+        'datePublished' => $post->published_at->toIso8601String(),
+        'dateModified' => $post->updated_at?->toIso8601String(),
+        'mainEntityOfPage' => route('pages.postshow', $post->slug),
+        'publisher' => ['@type' => 'Organization', 'name' => 'Brotherfall'],
+        'image' => $post->featured_image ?: null,
+    ]);
+    @endphp
+    <script type="application/ld+json">{!! json_encode($articleSchema, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES) !!}</script>
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -10,14 +23,20 @@
                             <h1 class="h2 font-weight-bold mb-0"
                                 style="min-width: 0; overflow-wrap: anywhere; flex: 1 1 240px;">{{ ucfirst($post->title)
                                 }}</h1>
-                            @if ($post->category)
-                            <span class="posts-category">{{ ucfirst($post->category) }}</span>
+                            @if ($post->category && collect(\App\Enums\PostCategory::cases())->contains(fn ($item) => strtolower($item->value) === strtolower($post->category)))
+                            <a class="posts-category" href="{{ route('pages.article-category', strtolower($post->category)) }}">{{ ucfirst($post->category) }}</a>
                             @endif
                         </div>
                         <p class="text-muted small mt-3 mb-4">
                             <time datetime="{{ $post->published_at->toIso8601String() }}">{{
                                 $post->published_at->format('M j, Y') }}</time>
                         </p>
+                        @if ($post->featured_image)
+                        <img class="img-fluid rounded mb-4" src="{{ $post->featured_image }}" alt="{{ $post->image_alt }}">
+                        @endif
+                        @if ($post->tags)
+                        <p class="text-muted small">{{ implode(' ? ', $post->tags) }}</p>
+                        @endif
                         @if ($post->excerpt)
                         <p class="lead text-muted">{{ ucfirst($post->excerpt) }}</p>
                         @endif
@@ -26,6 +45,21 @@
                             ucfirst($post->content) }}</div>
                     </div>
                 </article>
+                @if ($relatedPosts->isNotEmpty())
+                <section class="mt-5" aria-labelledby="related-heading">
+                    <h2 id="related-heading" class="h4">Related articles</h2>
+                    <ul>@foreach ($relatedPosts as $related)
+                        <li><a href="{{ route('pages.postshow', $related->slug) }}">{{ $related->title }}</a></li>
+                    @endforeach</ul>
+                </section>
+                @endif
+                <section class="mt-5" aria-labelledby="tools-heading">
+                    <h2 id="tools-heading" class="h4">Useful free tools</h2>
+                    <a class="mr-3" href="{{ route('pages.word-counter') }}">Word counter</a>
+                    <a class="mr-3" href="{{ route('pages.seo-audit') }}">SEO audit</a>
+                    <a class="mr-3" href="{{ route('pages.percentage-calculator') }}">Percentage calculator</a>
+                    <a href="{{ route('pages.timezone-converter') }}">Time zone converter</a>
+                </section>
                 <section class="mt-5" aria-labelledby="post-comments-heading">
                     <h2 id="post-comments-heading" class="h4 mb-3">Comments</h2>
                     @if (session('commentStatus'))

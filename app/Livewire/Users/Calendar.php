@@ -14,7 +14,7 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Your Personal Calendar and Weekly Planner | CD',
+        'title' => 'Your Personal Calendar and Weekly Planner | Brotherfall',
         'description' => 'Plan appointments and activities across monthly and weekly calendar views in your preferred time zone.',
         'keywords' => 'personal calendar, weekly planner, event organizer',
     ]

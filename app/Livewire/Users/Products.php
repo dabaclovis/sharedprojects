@@ -17,7 +17,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Manage Your Product Recommendations | CD',
+        'title' => 'Manage Your Product Recommendations | Brotherfall',
         'description' => 'Create and maintain your product recommendations, images, prices and publication status.',
         'keywords' => 'manage products, affiliate recommendations, product listings',
     ]

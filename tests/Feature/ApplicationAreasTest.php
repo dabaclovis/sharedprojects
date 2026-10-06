@@ -127,16 +127,52 @@ class ApplicationAreasTest extends TestCase
         $this->assertNull($post->fresh()->published_at);
     }
 
-    public function test_admin_article_manager_capitalizes_titles_and_displays_owner_username(): void
+    public function test_admin_article_manager_shows_only_two_word_titles_and_status(): void
     {
         $owner = User::factory()->create(['name' => 'judith danji', 'username' => 'judith_danji']);
         $post = $this->article($owner);
         $post->update(['title' => 'my educational journey in America']);
         $admin = User::factory()->create(['role' => 'admin']);
 
-        Livewire::actingAs($admin)->test(ContentManager::class, ['kind' => 'articles'])
+        $component = Livewire::actingAs($admin)->test(ContentManager::class, ['kind' => 'articles'])
+            ->assertSee('My educational')
+            ->assertDontSee('journey in America')
+            ->assertSee('Draft')
+            ->assertDontSee('judith_danji')->assertDontSee('judith danji');
+
+        $document = new \DOMDocument;
+        $previousErrorMode = libxml_use_internal_errors(true);
+        $document->loadHTML($component->html());
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousErrorMode);
+        $xpath = new \DOMXPath($document);
+        $headers = $xpath->query('//table/thead/tr/th');
+        $this->assertSame(2, $headers->length);
+        $this->assertSame('Title', trim($headers->item(0)->textContent));
+        $this->assertSame('Status', trim($headers->item(1)->textContent));
+        $this->assertSame(2, $xpath->query('//table/tbody/tr/td')->length);
+        $this->assertSame('My educational', trim($xpath->query('//table/tbody/tr/td/button')->item(0)->textContent));
+        $component->call('review', $post->id)
             ->assertSee('My educational journey in America')
             ->assertSee('judith_danji')->assertDontSee('judith danji');
+        $this->assertSame('my educational journey in America', $post->fresh()->title);
+    }
+
+    public function test_admin_article_manager_preserves_short_titles_search_and_trash_status(): void
+    {
+        $post = $this->article(User::factory()->create());
+        $post->update(['title' => 'solo']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $component = Livewire::actingAs($admin)->test(ContentManager::class, ['kind' => 'articles'])
+            ->assertSee('Solo');
+
+        $post->update(['title' => 'Hidden words remain searchable']);
+        $component->set('search', 'searchable')
+            ->assertSee('Hidden words')->assertDontSee('remain searchable');
+        $post->delete();
+        $component->set('status', 'trash')->assertSee('Hidden words')->assertSee('In trash')
+            ->set('search', 'missing')->assertSee('colspan="2"', false)
+            ->assertSee('No records match these filters.');
     }
 
     public function test_admin_review_limits_article_content_to_350_characters(): void

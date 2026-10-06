@@ -8,7 +8,7 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Free Word and Character Counter | CD',
+        'title' => 'Free Word and Character Counter | Brotherfall',
         'description' => 'Count words, characters, non-space characters and estimated reading time for essays, posts and documents.',
         'keywords' => 'word counter, character counter, reading time calculator, text length checker',
     ]

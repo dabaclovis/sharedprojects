@@ -171,6 +171,20 @@
                 @error('content') <p class="w3-text-red w3-small" role="alert">{{ $message }}</p> @enderror
                 </div>
                 <div class="article-editor-details">
+<label for="article-slug">URL slug (leave blank to generate)</label><input id="article-slug" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="slug">
+@error('slug') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="article-seo_title">SEO title</label><input id="article-seo_title" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="seo_title">
+@error('seo_title') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="article-meta_description">Meta description</label><input id="article-meta_description" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="meta_description">
+@error('meta_description') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="article-featured_image">Featured image URL</label><input id="article-featured_image" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="featured_image">
+@error('featured_image') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="article-image_alt">Image alt text</label><input id="article-image_alt" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="image_alt">
+@error('image_alt') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="article-target_keyword">Target keyword</label><input id="article-target_keyword" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="target_keyword">
+@error('target_keyword') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="article-tags">Tags (comma separated)</label><input id="article-tags" class="w3-input w3-border w3-round w3-margin-bottom" wire:model="tags">
+@error('tags') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
                 <label for="article-category">Category (optional)</label>
                 <select id="article-category" class="w3-select w3-border w3-round w3-margin-bottom"
                     wire:model="category">

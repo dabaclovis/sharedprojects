@@ -13,7 +13,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Inspirational Quotes and Community Wisdom | CD',
+        'title' => 'Inspirational Quotes and Community Wisdom | Brotherfall',
         'description' => 'Browse, search and share memorable quotes, thoughtful sayings and community-contributed words of wisdom.',
         'keywords' => 'inspirational quotes, famous sayings, community quotes, words of wisdom',
     ]

@@ -19,7 +19,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Website Audit Orders | CD Admin',
+        'title' => 'Website Audit Orders | Brotherfall Admin',
         'description' => 'Manage website audit requests, payments, findings and completed client reports.',
         'keywords' => 'website audit orders, audit workflow, client reports',
     ]

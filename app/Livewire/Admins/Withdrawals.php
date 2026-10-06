@@ -11,7 +11,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Withdrawal Requests | CD Admin',
+        'title' => 'Withdrawal Requests | Brotherfall Admin',
         'description' => 'Review and manually process user withdrawal requests.',
         'keywords' => 'withdrawal requests, payout review, earnings administration',
     ]

@@ -12,9 +12,9 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Sign In to Your CD Account',
+        'title' => 'Sign In to Your Brotherfall Account',
         'description' => 'Sign in securely to manage your articles, products, calendar and account settings.',
-        'keywords' => 'CD login, account sign in, member login',
+        'keywords' => 'Brotherfall login, account sign in, member login',
     ]
 )]
 class Login extends Component

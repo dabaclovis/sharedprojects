@@ -2,14 +2,30 @@
 
 use App\Http\Controllers\AffiliateRedirectController;
 use App\Http\Controllers\BusinessReportController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SiteReportController;
+use App\Http\Middleware\ResolveArticleSlug;
 use App\Livewire\Pages;
+use App\Models\Post;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/articles', Pages\Articles::class)->name('pages.articles');
+Route::get('/articles/category/{category}', Pages\Articles::class)->name('pages.article-category');
+Route::get('/articles/{slug}', Pages\PostShow::class)->middleware(ResolveArticleSlug::class)->name('pages.postshow');
 Route::get('/', Pages\Index::class)->name('pages.index');
 Route::prefix('pages')->name('pages.')->group(function () {
-    Route::get('/articles', Pages\Articles::class)->name('articles');
-    Route::get('/articles/{slug}', Pages\PostShow::class)->name('postshow');
+    Route::redirect('/articles', '/articles', 301);
+    Route::get('/articles/{slug}', function (string $slug) {
+        $post = Post::published()->where('slug', $slug)->first();
+        if (! $post) {
+            $id = DB::table('post_slug_aliases')->where('slug', $slug)->value('post_id');
+            $post = Post::published()->findOrFail($id);
+        }
+
+        return redirect()->route('pages.postshow', $post->slug, 301);
+    });
     Route::get('/products', Pages\Products::class)->name('products');
     Route::get('/quotes', Pages\Notes::class)->name('quotes');
     Route::get('/about', Pages\About::class)->name('about');

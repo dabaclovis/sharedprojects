@@ -10,15 +10,15 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Livewire\Attributes\Locked;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Manage Your Articles | CD',
+        'title' => 'Manage Your Articles | Brotherfall',
         'description' => 'Write, revise, submit and manage your community articles from one workspace.',
         'keywords' => 'manage articles, write articles, content workspace',
     ]
@@ -66,6 +66,20 @@ class Articles extends Component
 
     public string $title = '';
 
+    public string $slug = '';
+
+    public string $seo_title = '';
+
+    public string $meta_description = '';
+
+    public string $featured_image = '';
+
+    public string $image_alt = '';
+
+    public string $target_keyword = '';
+
+    public string $tags = '';
+
     public string $content = '';
 
     public string $category = '';
@@ -96,15 +110,16 @@ class Articles extends Component
         $this->cancel();
         $this->postId = $post->id;
         $this->revision = $this->fingerprint($post);
-        foreach (['title', 'content', 'category', 'icon', 'status'] as $field) {
+        foreach (['title', 'content', 'category', 'icon', 'status', 'slug', 'seo_title', 'meta_description', 'featured_image', 'image_alt', 'target_keyword'] as $field) {
             $this->{$field} = $post->{$field} ?? '';
         }
+        $this->tags = implode(', ', $post->tags ?? []);
         $this->showEditor = true;
     }
 
     public function cancel(): void
     {
-        $this->reset('postId', 'revision', 'showEditor', 'title', 'content', 'category', 'icon', 'status');
+        $this->reset('postId', 'revision', 'showEditor', 'title', 'content', 'category', 'icon', 'status', 'slug', 'seo_title', 'meta_description', 'featured_image', 'image_alt', 'target_keyword', 'tags');
         $this->resetValidation();
     }
 
@@ -112,13 +127,22 @@ class Articles extends Component
     {
         $this->title = trim($this->title);
         $this->content = trim($this->content);
+        $this->slug = trim($this->slug) ?: ($this->postId ? Auth::user()->posts()->findOrFail($this->postId)->slug : Post::availableSlug($this->title));
         $data = $this->validate([
+            'slug' => ['required', 'max:220', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', Rule::unique('posts', 'slug')->ignore($this->postId), Rule::unique('post_slug_aliases', 'slug')],
+            'seo_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:320'],
+            'featured_image' => ['nullable', 'url:http,https', 'max:255'],
+            'image_alt' => ['nullable', 'string', 'max:255', 'required_with:featured_image'],
+            'target_keyword' => ['nullable', 'string', 'max:255'],
+            'tags' => ['nullable', 'string', 'max:1000'],
             'title' => ['required', 'string', 'max:255'],
             'content' => ['required', 'string', 'max:100000'],
             'category' => ['nullable', Rule::enum(PostCategory::class)],
             'icon' => ['nullable', Rule::in(array_keys(Post::ICONS))],
             'status' => ['required', Rule::in(['draft', 'published', 'archived'])],
         ]);
+        $data['tags'] = array_values(array_unique(array_filter(array_map('trim', explode(',', $this->tags)))));
         $result = DB::transaction(function () use ($data) {
             $post = $this->postId ? Auth::user()->posts()->lockForUpdate()->find($this->postId) : new Post;
             if (! $post || ($post->exists && $this->revision !== $this->fingerprint($post))) {
@@ -129,7 +153,6 @@ class Articles extends Component
             $post->fill(collect($data)->except('status')->all());
             $post->excerpt = Str::limit(preg_replace('/\s+/u', ' ', trim(strip_tags($this->content))), 180);
             if (! $post->exists) {
-                $post->slug = Str::substr(Str::slug($this->title) ?: 'article', 0, 200) . '-' . Str::uuid();
                 $post->author()->associate(Auth::user());
                 $post->postsable()->associate(Auth::user());
             }
@@ -146,7 +169,7 @@ class Articles extends Component
         $this->cancel();
         $this->resetPage();
         session()->flash('articleStatus', $result['rewardAmountCents'] > 0
-            ? 'Article saved as a draft awaiting admin approval. Reward added: $' . number_format($result['rewardAmountCents'] / 100, 2) . '.'
+            ? 'Article saved as a draft awaiting admin approval. Reward added: $'.number_format($result['rewardAmountCents'] / 100, 2).'.'
             : 'Article saved as a draft awaiting admin approval.');
     }
 
@@ -203,9 +226,9 @@ class Articles extends Component
         $query = Auth::user()->posts()
             ->select(['id', 'author_id', 'title', 'excerpt', 'status', 'published_at', 'updated_at', 'deleted_at'])
             ->with('remarks.admin:id,name')
-            ->when($this->filter === 'trash', fn($query) => $query->onlyTrashed())
-            ->when(in_array($this->filter, ['draft', 'published', 'archived'], true), fn($query) => $query->where('status', $this->filter))
-            ->when(trim($this->search) !== '', fn($query) => $query->where('title', 'like', '%' . mb_substr(trim($this->search), 0, 200) . '%'));
+            ->when($this->filter === 'trash', fn ($query) => $query->onlyTrashed())
+            ->when(in_array($this->filter, ['draft', 'published', 'archived'], true), fn ($query) => $query->where('status', $this->filter))
+            ->when(trim($this->search) !== '', fn ($query) => $query->where('title', 'like', '%'.mb_substr(trim($this->search), 0, 200).'%'));
         match ($this->sort) {
             'title' => $query->orderBy('title'),
             'oldest' => $query->orderBy('updated_at'),

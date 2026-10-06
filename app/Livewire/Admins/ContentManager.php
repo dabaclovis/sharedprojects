@@ -16,7 +16,7 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Article Moderation | CD Admin',
+        'title' => 'Article Moderation | Brotherfall Admin',
         'description' => 'Review, approve, archive, restore and provide feedback on community articles.',
         'keywords' => 'article moderation, content review, publishing workflow',
     ]

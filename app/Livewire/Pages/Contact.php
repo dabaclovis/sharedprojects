@@ -10,9 +10,9 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Contact CD | Questions, Feedback and Support',
-        'description' => 'Contact the CD team with questions, feedback, support requests or ideas for improving our tools and community resources.',
-        'keywords' => 'contact CD, customer support, website feedback, help request',
+        'title' => 'Contact Brotherfall | Questions, Feedback and Support',
+        'description' => 'Contact the Brotherfall team with questions, feedback, support requests or ideas for improving our tools and community resources.',
+        'keywords' => 'contact Brotherfall, customer support, website feedback, help request',
     ]
 )]
 class Contact extends Component

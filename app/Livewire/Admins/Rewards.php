@@ -14,7 +14,7 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Content Rewards Management | CD Admin',
+        'title' => 'Content Rewards Management | Brotherfall Admin',
         'description' => 'Manage the contributor reward fund and issue eligible article and quote rewards.',
         'keywords' => 'content rewards, contributor payments, reward management',
     ]

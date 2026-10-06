@@ -28,27 +28,43 @@
                 <thead>
                     <tr>
                         <th scope="col">Title</th>
+                        @if ($kind !== 'articles')
                         <th scope="col">Owner</th>
+                        @endif
                         <th scope="col">Status</th>
+                        @if ($kind !== 'articles')
                         <th scope="col">{{ $kind === 'events' ? 'Starts' : 'Updated' }}</th>
                         <th scope="col">Action</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($records as $record)
                     <tr wire:key="managed-{{ $kind }}-{{ $record->id }}">
-                        <td style="overflow-wrap: anywhere;">{{ ucfirst($record->title) }}</td>
+                        <td style="overflow-wrap: anywhere;">
+                            @if ($kind === 'articles')
+                            <button type="button" class="btn btn-link p-0 text-left"
+                                wire:click="review({{ $record->id }})" wire:loading.attr="disabled">{{
+                                \Illuminate\Support\Str::words(ucfirst($record->title), 2, '') }}</button>
+                            @else
+                            {{ ucfirst($record->title) }}
+                            @endif
+                        </td>
+                        @if ($kind !== 'articles')
                         <td>{{ $record->{$ownerRelation}?->username ?: ($record->{$ownerRelation}?->name ?? 'Deleted
                             account') }}</td>
+                        @endif
                         <td>{{ $record->trashed() ? 'In trash' : ucfirst($record->status) }}</td>
+                        @if ($kind !== 'articles')
                         <td>@if ($kind === 'events'){{ $record->starts_at->setTimezone($record->timezone)->format('M j,
                             Y H:i') }}<br><small>{{ $record->timezone }}</small>@else{{ $record->updated_at?->format('M
                             j, Y') }}@endif</td>
                         <td><button class="btn btn-outline-primary btn-sm" wire:click="review({{ $record->id }})"
                                 wire:loading.attr="disabled">Review</button></td>
+                        @endif
                     </tr>
                     @empty<tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No records match these filters.</td>
+                        <td colspan="{{ $kind === 'articles' ? 2 : 5 }}" class="text-center py-4 text-muted">No records match these filters.</td>
                     </tr>@endforelse
                 </tbody>
             </table>

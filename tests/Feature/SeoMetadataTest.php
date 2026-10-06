@@ -52,7 +52,7 @@ class SeoMetadataTest extends TestCase
         $user = User::factory()->create(['status' => 'active']);
 
         $this->actingAs($user)->get(route('users.index'))->assertOk()
-            ->assertSee('<title>Your Content Dashboard | CD</title>', false)
+            ->assertSee('<title>Your Content Dashboard | Brotherfall</title>', false)
             ->assertSee('name="robots" content="noindex, nofollow"', false)
             ->assertDontSee('rel="canonical"', false);
     }

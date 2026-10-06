@@ -13,9 +13,9 @@ use Livewire\Component;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'Create Your Free CD Account',
-        'description' => 'Create a CD account to contribute articles, manage recommendations and organize your personal calendar.',
-        'keywords' => 'create account, CD registration, community membership',
+        'title' => 'Create Your Free Brotherfall Account',
+        'description' => 'Create a Brotherfall account to contribute articles, manage recommendations and organize your personal calendar.',
+        'keywords' => 'create account, Brotherfall registration, community membership',
     ]
 )]
 class Register extends Component

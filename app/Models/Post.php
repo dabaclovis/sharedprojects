@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class Post extends Model
 {
@@ -32,7 +34,30 @@ class Post extends Model
         'fa-plane' => 'Travel',
     ];
 
-    public function remarks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    protected static function booted(): void
+    {
+        static::updating(function (Post $post) {
+            if ($post->isDirty('slug')) {
+                DB::table('post_slug_aliases')->insertOrIgnore([
+                    'post_id' => $post->id, 'slug' => $post->getOriginal('slug'),
+                ]);
+            }
+        });
+    }
+
+    public static function availableSlug(string $title): string
+    {
+        $base = Str::substr(Str::slug($title) ?: 'article', 0, 200);
+        $slug = $base;
+        $suffix = 2;
+        while (static::withTrashed()->where('slug', $slug)->exists() || DB::table('post_slug_aliases')->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$suffix++;
+        }
+
+        return $slug;
+    }
+
+    public function remarks(): HasMany
     {
         return $this->hasMany(Remark::class)->latest('id');
     }
@@ -50,7 +75,7 @@ class Post extends Model
         'content',
         'category',
         'icon',
-        'featured_image',
+        'featured_image', 'seo_title', 'meta_description', 'image_alt', 'target_keyword', 'tags',
     ];
 
     protected $attributes = [
@@ -61,6 +86,7 @@ class Post extends Model
     {
         return [
             'published_at' => 'datetime',
+            'tags' => 'array',
         ];
     }
 

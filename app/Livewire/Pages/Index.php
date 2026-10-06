@@ -9,7 +9,7 @@ use Livewire\Attributes\Layout;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'CD Community Hub | Free Tools, Articles and Resources',
+        'title' => 'Brotherfall Community Hub | Free Tools, Articles and Resources',
         'description' => 'Discover free online tools, useful community articles, product recommendations and practical business resources in one place.',
         'keywords' => 'free online tools, community articles, business resources, product recommendations',
     ]

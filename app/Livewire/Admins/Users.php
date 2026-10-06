@@ -16,8 +16,8 @@ use Livewire\WithPagination;
 #[Layout(
     'components.layouts.app',
     [
-        'title' => 'User Account Management | CD Admin',
-        'description' => 'Create, review, update, suspend and manage CD user accounts and permissions.',
+        'title' => 'User Account Management | Brotherfall Admin',
+        'description' => 'Create, review, update, suspend and manage Brotherfall user accounts and permissions.',
         'keywords' => 'user management, account administration, user permissions',
     ]
 )]
