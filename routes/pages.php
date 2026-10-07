@@ -27,6 +27,8 @@ Route::prefix('pages')->name('pages.')->group(function () {
         return redirect()->route('pages.postshow', $post->slug, 301);
     });
     Route::get('/products', Pages\Products::class)->name('products');
+    Route::get('/products/category/{categorySlug}', Pages\Products::class)->name('product-category');
+    Route::get('/products/{slug}', Pages\ProductShow::class)->name('product-show');
     Route::get('/quotes', Pages\Notes::class)->name('quotes');
     Route::get('/about', Pages\About::class)->name('about');
     Route::get('/contact', Pages\Contact::class)->name('contact');

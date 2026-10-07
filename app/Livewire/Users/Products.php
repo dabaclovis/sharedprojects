@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Livewire\Attributes\Locked;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
@@ -50,6 +50,18 @@ class Products extends Component
 
     public string $description = '';
 
+    public string $seo_title = '';
+
+    public string $meta_description = '';
+
+    public string $image_alt = '';
+
+    public string $best_for = '';
+
+    public string $pros = '';
+
+    public string $cons = '';
+
     public string $merchant = '';
 
     public string $category = '';
@@ -88,7 +100,7 @@ class Products extends Component
     public function cancel(): void
     {
         $this->reset('image', 'removeImage', 'currentImageUrl');
-        $this->reset('productId', 'showEditor', 'title', 'description', 'merchant', 'category', 'affiliate_url', 'image_url', 'price', 'currency', 'status');
+        $this->reset('productId', 'showEditor', 'title', 'description', 'merchant', 'category', 'affiliate_url', 'image_url', 'price', 'currency', 'status', 'seo_title', 'meta_description', 'image_alt', 'best_for', 'pros', 'cons');
         $this->resetValidation();
     }
 
@@ -98,7 +110,7 @@ class Products extends Component
         $this->cancel();
         $this->productId = $product->id;
         $this->currentImageUrl = $product->image_path ? $product->image_source : null;
-        foreach (['title', 'description', 'merchant', 'category', 'affiliate_url', 'image_url', 'price', 'currency', 'status'] as $field) {
+        foreach (['title', 'description', 'merchant', 'category', 'affiliate_url', 'image_url', 'price', 'currency', 'status', 'seo_title', 'meta_description', 'image_alt', 'best_for', 'pros', 'cons'] as $field) {
             $this->{$field} = (string) ($product->{$field} ?? '');
         }
         $this->showEditor = true;
@@ -111,6 +123,12 @@ class Products extends Component
             $this->{$field} = trim($this->{$field});
         }
         $data = $this->validate([
+            'seo_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:320'],
+            'image_alt' => ['nullable', 'string', 'max:255'],
+            'best_for' => ['nullable', 'string', 'max:3000'],
+            'pros' => ['nullable', 'string', 'max:3000'],
+            'cons' => ['nullable', 'string', 'max:3000'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:10000'],
             'merchant' => ['required', 'string', 'max:120'],

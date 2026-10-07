@@ -54,7 +54,8 @@
                 </section>
                 @endif
                 <section class="mt-5" aria-labelledby="tools-heading">
-                    <h2 id="tools-heading" class="h4">Useful free tools</h2>
+                    <h2 id="tools-heading" class="h4">Tools and recommendations</h2>
+                    @guest <a class="mr-3" href="{{ route('pages.products') }}">Explore community product recommendations</a> @endguest
                     <a class="mr-3" href="{{ route('pages.word-counter') }}">Word counter</a>
                     <a class="mr-3" href="{{ route('pages.seo-audit') }}">SEO audit</a>
                     <a class="mr-3" href="{{ route('pages.percentage-calculator') }}">Percentage calculator</a>

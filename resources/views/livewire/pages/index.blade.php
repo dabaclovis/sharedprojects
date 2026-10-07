@@ -20,12 +20,12 @@
     <section class="jumbotron jumbotron-fluid text-center posts-hero mb-0" aria-labelledby="home-heading">
         <div class="container py-4 py-md-5">
             <p class="posts-eyebrow mb-3">A space for curious minds</p>
-            <h1 id="home-heading" class="display-4 font-weight-bold">Good stories. Fresh perspectives.</h1>
-            <p class="lead mx-auto mt-3 mb-4 posts-intro">Share your stories, connect people with useful discoveries,
-                and bring your next event to life.</p>
+            <h1 id="home-heading" class="display-4 font-weight-bold">Useful ideas for everyday life and work.</h1>
+            <p class="lead mx-auto mt-3 mb-4 posts-intro">Practical information, useful tools, and community recommendations to help you make informed choices.</p>
             @guest <a wire:navigate class="btn btn-primary px-4 py-2" href="{{ route('pages.articles') }}">Explore
                 articles</a> @endguest
-            <a class="btn btn-outline-primary px-4 py-2 ml-2" href="#services">Our services</a>
+            <a class="btn btn-outline-primary px-4 py-2 ml-2" href="#services">Free tools</a>
+            @guest <a class="btn btn-outline-primary px-4 py-2 ml-2" href="{{ route('pages.products') }}">Product recommendations</a> @endguest
         </div>
     </section>
     <section id="services" class="container py-5" aria-labelledby="services-heading">

@@ -26,7 +26,7 @@ return [
         ],
         'pages.products' => [
             'title' => 'Recommended Products and Useful Finds | Brotherfall',
-            'description' => 'Explore useful product recommendations with clear details, pricing information and transparent affiliate disclosures.',
+            'description' => 'Explore community product recommendations for everyday life and work, with practical benefits, limitations and clear affiliate disclosures.',
             'keywords' => 'product recommendations, useful products, affiliate products, product discoveries',
         ],
         'pages.quotes' => [

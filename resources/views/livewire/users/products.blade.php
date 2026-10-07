@@ -60,6 +60,19 @@
                 <label for="product-description">Description</label><textarea id="product-description"
                     class="form-control mb-2" wire:model="description" rows="2" required></textarea>
                 @error('description') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<p class="small text-muted">Explain who this suits, what is useful, and its limitations. Use verified facts and clearly distinguish personal experience from manufacturer claims.</p>
+<label for="product-seo_title">SEO title (optional)</label><textarea id="product-seo_title" class="form-control mb-2" rows="2" wire:model="seo_title"></textarea>
+@error('seo_title') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="product-meta_description">Meta description (optional)</label><textarea id="product-meta_description" class="form-control mb-2" rows="2" wire:model="meta_description"></textarea>
+@error('meta_description') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="product-image_alt">Image alt text (optional)</label><textarea id="product-image_alt" class="form-control mb-2" rows="2" wire:model="image_alt"></textarea>
+@error('image_alt') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="product-best_for">Who is this best for?</label><textarea id="product-best_for" class="form-control mb-2" rows="2" wire:model="best_for"></textarea>
+@error('best_for') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="product-pros">Benefits (one per line)</label><textarea id="product-pros" class="form-control mb-2" rows="2" wire:model="pros"></textarea>
+@error('pros') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
+<label for="product-cons">Drawbacks / things to consider (one per line)</label><textarea id="product-cons" class="form-control mb-2" rows="2" wire:model="cons"></textarea>
+@error('cons') <p class="text-danger small" role="alert">{{ $message }}</p> @enderror
                 <label for="product-category">Category (optional)</label>
                 <select id="product-category" class="custom-select mb-2" wire:model="category">
                     <option value="">No category</option>

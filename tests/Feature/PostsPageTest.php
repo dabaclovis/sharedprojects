@@ -43,7 +43,8 @@ class PostsPageTest extends TestCase
     public function test_homepage_displays_services_instead_of_the_post_list(): void
     {
         $this->get(route('pages.index'))->assertOk()
-            ->assertSee('Good stories. Fresh perspectives.')
+            ->assertSee('Useful ideas for everyday life and work.')
+            ->assertSee(route('pages.products'))
             ->assertSee('Post management')->assertSee('Affiliate link posting')
             ->assertSee('Event scheduling')->assertSee(route('pages.articles'))
             ->assertDontSee('Every great story starts with a hello')
