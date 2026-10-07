@@ -18,7 +18,8 @@
     <meta name="keywords" content="{{ $pageKeywords }}">
     <meta name="robots" content="{{ $isPrivateArea ? 'noindex, nofollow' : 'index, follow' }}">
     @unless ($isPrivateArea)
-    <link rel="canonical" href="{{ $canonical ?? (request()->integer('page') > 1 ? url()->current().'?page='.request()->integer('page') : url()->current()) }}">
+    <link rel="canonical"
+        href="{{ $canonical ?? (request()->integer('page') > 1 ? url()->current().'?page='.request()->integer('page') : url()->current()) }}">
     @endunless
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/brand-mark.svg') }}">
 
@@ -27,6 +28,7 @@
         integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     {{-- fontawesome cdn v7 --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css">
+    <meta name="google-adsense-account" content="ca-pub-1277887235359940">
     {{-- w3 css --}}
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     {{-- custom css --}}
