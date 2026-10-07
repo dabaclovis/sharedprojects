@@ -45,9 +45,9 @@ return [
             'keywords' => 'contact Brotherfall, customer support, website feedback, help request',
         ],
         'pages.policy' => [
-            'title' => 'Privacy, Content and Affiliate Policy | Brotherfall',
-            'description' => 'Review Brotherfall policies covering privacy, submitted content, affiliate links, acceptable use and platform responsibilities.',
-            'keywords' => 'privacy policy, content policy, affiliate disclosure, acceptable use',
+            'title' => 'Privacy, Cookies and Advertising Policy | Brotherfall',
+            'description' => 'Learn how Brotherfall handles personal information, cookies, advertising choices, affiliate links and community content.',
+            'keywords' => 'privacy policy, advertising cookies, consent, affiliate disclosure, community content',
         ],
         'pages.business' => [
             'title' => 'Website Audits and Sponsorship Services | Brotherfall',
